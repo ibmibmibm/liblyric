@@ -1,0 +1,16 @@
+lyric {
+tag {
+name=Unknow Name
+lyricist=Unknow Lyricist
+}
+singerlist {
+singer {
+tag {
+name=Unknow Singer
+gender=Unknow Gender
+}
+content {
+00:00 [12]This [10]is [5]a [12]test.
+}
+}
+}
