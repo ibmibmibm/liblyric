@@ -1,174 +1,137 @@
-#include <stdlib.h>
-#include <string.h>
 #include "lyric.h"
 #include "helpers.h"
-#include "property.h"
 
-static bool _extend_array(Lyric *lyric);
-
-Lyric* lyric_lyric_new(void) {
-    Lyric *lyric = (Lyric*)calloc(sizeof(Lyric), 1);
-    if (lyric == NULL) {
-        return NULL;
-    }
-    lyric->property = lyric_property_new();
-    if (lyric->property == NULL) {
-        lyric_lyric_delete(lyric);
-        return NULL;
+bool lyric_lyric_create(Lyric *const restrict lyric) {
+    if (unlikely(!lyric_tag_create(&lyric->tag))) {
+        goto err0;
     }
     lyric->singer_size = 0;
     lyric->_malloc_singer_size = 1;
-    lyric->singers = (Singer**)malloc(sizeof(Singer*));
-    if (lyric->singers == NULL) {
-        lyric_lyric_delete(lyric);
-        return NULL;
+    lyric->singers = (Singer*)lyric_alloc(sizeof(Singer));
+    if (unlikely(lyric->singers == NULL)) {
+        goto err1;
     }
-    return lyric;
+    return true;
+err1:
+    lyric_tag_clean(&lyric->tag);
+err0:
+    return false;
 }
 
-Lyric* lyric_lyric_new_copy(const Lyric *_lyric) {
-    size_t i;
-    Lyric *lyric = (Lyric*)calloc(sizeof(Lyric), 1);
-    if (lyric == NULL) {
-        return NULL;
+bool lyric_lyric_copy(Lyric* const restrict lyric, const Lyric *const restrict _lyric) {
+    if (unlikely(_lyric == NULL || lyric == NULL)) {
+        goto err0;
     }
-    lyric->property = lyric_property_new_copy(_lyric->property);
-    if (lyric->property == NULL) {
-        lyric_lyric_delete(lyric);
-        return NULL;
+    if (unlikely(lyric == _lyric)) {
+        return true;
     }
-    lyric->singer_size = _lyric->singer_size;
-    lyric->_malloc_singer_size = _lyric->_malloc_singer_size;
-    lyric->singers = (Singer**)calloc(sizeof(Singer*) * lyric->_malloc_singer_size, 1);
-    if (lyric->singers == NULL) {
-        lyric_lyric_delete(lyric);
-        return NULL;
+    if (unlikely(!lyric_tag_copy(&lyric->tag, &_lyric->tag))) {
+        goto err0;
     }
-    for (i = 0; i < lyric->singer_size; ++i) {
-        lyric->singers[i] = lyric_singer_new_copy(_lyric->singers[i]);
-        if (lyric->singers[i] == NULL) {
-            lyric_lyric_delete(lyric);
-            return NULL;
+    const size_t size = _lyric->singer_size;
+    lyric->_malloc_singer_size = size;
+    lyric->singers = (Singer*)lyric_alloc(sizeof(Singer) * size);
+    if (unlikely(lyric->singers == NULL)) {
+        goto err1;
+    }
+    for (lyric->singer_size = 0; lyric->singer_size < lyric->singer_size; ++lyric->singer_size) {
+        if (unlikely(!lyric_singer_copy(&lyric->singers[lyric->singer_size], &_lyric->singers[lyric->singer_size]))) {
+            goto err2;
         }
     }
+    return true;
+err2:
+    for (size_t i = 0; i < lyric->singer_size; ++i) {
+        lyric_singer_clean(&lyric->singers[i]);
+    }
+    lyric_free(lyric->singers);
+err1:
+    lyric_tag_clean(&lyric->tag);
+err0:
+    return false;
+}
+
+Lyric* lyric_lyric_new(void) {
+    Lyric *lyric = (Lyric*)lyric_alloc(sizeof(Lyric));
+    if (unlikely(lyric == NULL)) {
+        goto err0;
+    }
+    if (unlikely(!lyric_lyric_create(lyric))) {
+        goto err1;
+    }
     return lyric;
+err1:
+    lyric_free(lyric);
+err0:
+    return NULL;
 }
 
-Lyric* lyric_lyric_new_from_file(FILE *file) {
-    Lyric *lyric = (Lyric*)malloc(sizeof(Lyric));
-    if (lyric == NULL) {
-        return NULL;
+Lyric* lyric_lyric_new_copy(const Lyric *const restrict _lyric) {
+    Lyric *lyric = (Lyric*)lyric_alloc(sizeof(Lyric));
+    if (unlikely(lyric == NULL)) {
+        goto err0;
     }
-    if (!_match_token(file, "lyric"))
-        return NULL;
-    if (!_match_token(file, "{"))
-        return NULL;
-
-    lyric->property = lyric_property_new_from_file(file);
-    if (lyric->property == NULL) {
-        lyric_lyric_delete(lyric);
-        return NULL;
+    if (unlikely(!lyric_lyric_copy(lyric, _lyric))) {
+        goto err1;
     }
-
-    lyric->singer_size = 0;
-    lyric->_malloc_singer_size = 1;
-    lyric->singers = (Singer**)malloc(sizeof(Singer*));
-    if (lyric->singers == NULL) {
-        lyric_lyric_delete(lyric);
-        return NULL;
-    }
-    if (!_match_token(file, "singerlist"))
-        return NULL;
-    if (!_match_token(file, "{"))
-        return NULL;
-    while (_match_token(file, "singer")) {
-    }
-    /* XXX: hacked */
-    /*
-    if (!_match_token(file, "}")) {
-        lyric_lyric_delete(lyric);
-        return NULL;
-    }
-    */
     return lyric;
+err1:
+    lyric_free(lyric);
+err0:
+    return NULL;
 }
 
-void lyric_lyric_save_to_file(const Lyric *lyric, FILE *file) {
-    size_t i;
-    fputs("lyric {\n", file);
-    lyric_property_save_to_file(lyric->property, file);
-    for (i = 0; i < lyric->singer_size; ++i)
-        lyric_singer_save_to_file(lyric->singers[i], file);
-    fputs("}\n", file);
+void lyric_lyric_clean(Lyric *const restrict lyric) {
+    lyric_tag_clean(&lyric->tag);
+    if (likely(lyric != NULL)) {
+        for (size_t i = 0; i < lyric->singer_size; ++i) {
+            lyric_singer_clean(&lyric->singers[i]);
+        }
+        lyric_free(lyric->singers);
+    }
 }
 
-void lyric_lyric_delete(Lyric *lyric) {
-    size_t i;
-    if (lyric == NULL)
+void lyric_lyric_delete(Lyric *const restrict lyric) {
+    if (unlikely(lyric == NULL))
         return;
-    lyric_property_delete(lyric->property);
-    if (lyric->singers != NULL) {
-        for (i = 0; i < lyric->singer_size; ++i)
-            lyric_singer_delete(lyric->singers[i]);
-        free(lyric->singers);
-    }
-    free(lyric);
+    lyric_lyric_clean(lyric);
+    lyric_free(lyric);
 }
 
-bool lyric_lyric_insert(Lyric *lyric, const size_t position, Singer *singer) {
-    size_t i;
-    Singer *new_singer;
-    if (lyric->singer_size < position)
+bool lyric_lyric_insert(Lyric *const restrict lyric, const size_t position, const Singer *const restrict singer) {
+    if (unlikely(lyric->singer_size < position || singer == NULL))
         return false;
-    if (lyric->singer_size > lyric->_malloc_singer_size)
-        if (!_extend_array(lyric))
+    if (unlikely(lyric->singer_size == lyric->_malloc_singer_size)) {
+        void *const array = lyric_extend_array(lyric->singers, sizeof(Singer), &lyric->_malloc_singer_size);
+        if (unlikely(array == NULL)) {
             return false;
-    new_singer = lyric_singer_new_copy(singer);
-    if (new_singer == NULL)
-        return false;
-    for (i = lyric->singer_size; i > position; --i) {
-        Singer *temp;
-        temp = lyric->singers[i];
-        lyric->singers[i] = lyric->singers[i - 1];
-        lyric->singers[i - 1] = temp;
+        }
+        lyric->singers = array;
     }
-    lyric->singers[i] = new_singer;
+    memmove(lyric->singers + position + 1, lyric->singers + position, sizeof(Singer) * (lyric->singer_size - position));
+    if (unlikely(!lyric_singer_copy(&lyric->singers[position], singer))) {
+        memmove(lyric->singers + position, lyric->singers + position + 1, sizeof(Singer) * (lyric->singer_size - position));
+        return false;
+    }
     ++lyric->singer_size;
     return true;
 }
 
-void lyric_lyric_remove(Lyric *lyric, const size_t position, Singer **singer) {
-    size_t i;
-
-    if (lyric->singer_size <= position)
+void lyric_lyric_remove(Lyric *const restrict lyric, const size_t position, Singer *const restrict singer) {
+    if (unlikely(lyric->singer_size <= position))
         return;
 
-    if (singer == NULL)
-        free(lyric->singers[position]);
-    else
-        *singer = lyric->singers[position];
-
-    for (i = position + 1; i < lyric->singer_size; ++i) {
-        lyric->singers[i - 1] = lyric->singers[i];
+    if (unlikely(singer != NULL)) {
+        memcpy(singer, &lyric->singers[position], sizeof(Singer));
     }
+    memmove(lyric->singers + position, lyric->singers + position + 1, sizeof(Singer) * (lyric->singer_size - position));
     --lyric->singer_size;
 }
 
-bool lyric_lyric_push_back(Lyric *lyric, Singer *singer) {
+bool lyric_lyric_push_back(Lyric *const restrict lyric, const Singer *const restrict singer) {
     return lyric_lyric_insert(lyric, lyric->singer_size, singer);
 }
 
-void lyric_lyric_pop_back(Lyric *lyric, Singer **singer) {
+void lyric_lyric_pop_back(Lyric *const restrict lyric, Singer *const restrict singer) {
     return lyric_lyric_remove(lyric, lyric->singer_size - 1, singer);
-}
-
-static bool _extend_array(Lyric *lyric) {
-    size_t new_malloc_size = lyric->_malloc_singer_size * 2;
-    Singer **new_singer_array;
-    new_singer_array = (Singer**) realloc(lyric->singers, sizeof(Singer*) * new_malloc_size);
-    if (new_singer_array == NULL)
-        return false;
-    lyric->singers = new_singer_array;
-    lyric->_malloc_singer_size = new_malloc_size;
-    return true;
 }

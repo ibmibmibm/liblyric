@@ -5,8 +5,10 @@
     },
     "singers" : [
         {
-            "name" : "Unknow Singer",
-            "gender" : "Unknow Gender",
+            "tag" : {
+                "name" : "Unknow Singer",
+                "gender" : "Unknow Gender"
+            },
             "content" : [
                 ["00:00", 12, "This", 10, "is", 5, "a", 12, "test."],
             ]
