@@ -5,7 +5,7 @@
 int usage(const char *program_name) {
     if (errno != 0)
         perror(program_name);
-    fprintf(stderr, "usage; %s filename.\n", program_name);
+    fprintf(stderr, "usage: %s filename.\n", program_name);
     return 0;
 }
 
