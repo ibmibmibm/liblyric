@@ -16,7 +16,8 @@ enum lyric_parser_status {
 struct _Parser {
     enum lyric_parser_status status, next_status;
     enum lyric_parser_error error;
-    struct json_object *json;
+    struct json_object *root;
+    struct json_object *current;
     struct _Lyric *lyric;
 };
 typedef struct _Parser Parser;
