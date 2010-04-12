@@ -1,15 +1,100 @@
+#include <json.h>
 #include "parser.h"
-#include "json.h"
 
-static inline void lyric_parser_switch(Parser *const restrict parser);
+enum json_type {
+    JSON_TYPE_NULL,
+    JSON_TYPE_INT,
+    JSON_TYPE_DOUBLE,
+    JSON_TYPE_BOOL,
+    JSON_TYPE_STRING,
+    JSON_TYPE_ARRAY,
+    JSON_TYPE_OBJECT,
+};
+
+struct json_val_element {
+    char *key;
+    uint32_t key_length;
+    struct json_val *val;
+};
+
+typedef struct json_val {
+    json_type type;
+    int length;
+    union {
+        char *data;
+        struct json_val **array;
+        struct json_val_element **object;
+    } u;
+} json_val_t;
+
+
+static const char *const string_of_errors[] = {
+    [JSON_ERROR_NO_MEMORY] = "out of memory",
+    [JSON_ERROR_BAD_CHAR] = "bad character",
+    [JSON_ERROR_POP_EMPTY] = "stack empty",
+    [JSON_ERROR_POP_UNEXPECTED_MODE] = "pop unexpected mode",
+    [JSON_ERROR_NESTING_LIMIT] = "nesting limit",
+    [JSON_ERROR_DATA_LIMIT] = "data limit",
+    [JSON_ERROR_COMMENT_NOT_ALLOWED] = "comment not allowed by config",
+    [JSON_ERROR_UNEXPECTED_CHAR] = "unexpected char",
+    [JSON_ERROR_UNICODE_MISSING_LOW_SURROGATE] = "missing unicode low surrogate",
+    [JSON_ERROR_UNICODE_UNEXPECTED_LOW_SURROGATE] = "unexpected unicode low surrogate",
+    [JSON_ERROR_COMMA_OUT_OF_STRUCTURE] = "error comma out of structure",
+    [JSON_ERROR_CALLBACK] = "error in a callback"
+};
+
+static int _json_parser_callback(void *userdata, int type, const char *data, uint32_t length) {
+    printf("%d %*s\n", type, length, data);
+    return 0;
+}
+
+static int _do_process_file(json_parser *const restrict parser, size_t *restrict lines, size_t *restrict col, FILE *const restrict file) {
+    int ret;
+
+    fseek(file, 0, SEEK_SET);
+    *lines = 1;
+    *col = 0;
+    while (true) {
+        char buffer[LIBJSON_DEFAULT_BUFFER_SIZE];
+        int32_t read = fread(buffer, 1, LIBJSON_DEFAULT_BUFFER_SIZE, file);
+        if (read <= 0)
+            break;
+        uint32_t processed;
+        ret = json_parser_string(parser, buffer, read, &processed);
+        for (uint32_t i = 0; i < processed; i++) {
+            if (buffer[i] == '\n') { *col = 0; *lines++; } else *col++;
+        }
+        if (ret)
+            break;
+    }
+    return ret;
+}
 
 bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict file) {
     if (unlikely(parser == NULL || file == NULL))
         return false;
-    parser->root = json_object_from_file(file);
-    if ((ptrdiff_t)parser->root < 0)
+
+    json_config config = {
+        .max_nesting = 0,
+        .max_data = 0,
+        .allow_c_comments = 1,
+        .allow_yaml_comments = 1,
+    };
+    json_parser _parser;
+    int ret = json_parser_init(&_parser, &config, _json_parser_callback, NULL);
+    if (ret != 0) {
+        fprintf(stderr, "error: initializing parser failed (code=%d): %s\n", ret, string_of_errors[ret]);
         return false;
-    return true;
+    }
+    ret = _do_process_file(&_parser, &parser->lines, &parser->col, file);
+    if (ret != 0) {
+        fprintf(stderr, "line %zd, col %zd: [code=%d] %s\n", parser->lines, parser->col, ret, string_of_errors[ret]);
+        return false;
+    }
+    ret = json_parser_is_done(&_parser);
+    if (ret != 0) {
+        return false;
+    }
 }
 
 Parser *lyric_parser_new_from_file(FILE *const restrict file) {
@@ -25,56 +110,13 @@ Parser *lyric_parser_new_from_file(FILE *const restrict file) {
     return parser;
 }
 
-static void lyric_parser_lyric_tag(Parser *const restrict parser) {
-}
-
-static void lyric_parser_lyric_singers(Parser *const restrict parser) {
-}
-
-static void lyric_parser_lyric(Parser *const restrict parser) {
-    if (json_object_is_type(parser->current, json_type_object)) {
-        parser->current = json_object_object_get(parser->current, "tag");
-        if (parser->current != NULL) {
-            lyric_parser_lyric_tag(parser);
-        }
-        parser->current = json_object_object_get(parser->current, "singers");
-        if (parser->current != NULL) {
-            lyric_parser_lyric_singers(parser);
-        }
-    }
-}
-
-void lyric_parser_start(Parser *const restrict parser) {
-    if (unlikely(parser == NULL)) {
-        return;
-    }
-    if (json_object_is_type(parser->root, json_type_array)) {
-        const size_t length = json_object_array_length(parser->root);
-        for (size_t i = 0; i < length; ++i) {
-            parser->current = json_object_array_get_idx(parser->root, i);
-            lyric_parser_lyric(parser);
-        }
-    } else {
-        lyric_parser_lyric(parser);
-    }
-}
-
 Lyric *lyric_read_file(FILE *const restrict file) {
     Parser *parser = lyric_parser_new_from_file(file);
     if (unlikely(parser == NULL))
         return NULL;
-    lyric_parser_start(parser);
-    if (parser->status == lyric_parser_status_finish) {
-        Lyric *result = parser->lyric;
-        json_object_put(parser->root);
-        lyric_free(parser);
-        return result;
-    } else {
-        lyric_free(parser->lyric);
-        json_object_put(parser->root);
-        lyric_free(parser);
-        return NULL;
-    }
+    Lyric *result = parser->lyric;
+    lyric_free(parser);
+    return result;
 }
 
 void lyric_write_file(const Lyric *const restrict lyric, FILE *const restrict file) {
