@@ -17,5 +17,7 @@ Tag* lyric_tag_new(void);
 Tag* lyric_tag_new_copy(const Tag *const restrict _tag);
 void lyric_tag_clean(Tag *const restrict tag);
 void lyric_tag_delete(Tag *const restrict tag);
+bool lyric_tag_insert(Tag *const restrict tag, const char *const restrict name, const char *const restrict value);
+void lyric_tag_remove(Tag *const restrict tag, char *const restrict name);
 
 #endif // __TAG_H__

@@ -56,6 +56,15 @@ static inline char *lyric_strdup(const char *const restrict pointer) {
     return result;
 }
 
+static inline char *lyric_strndup(const char *const restrict pointer, const size_t size) {
+    char *result = lyric_alloc(size + 1);
+    if (unlikely(result == NULL))
+        return NULL;
+    strncpy(result, pointer, size);
+    result[size] = '\0';
+    return result;
+}
+
 static inline int lyric_strncasecmp(const char *const restrict a, const char *const restrict b, const size_t n) {
     for (size_t i = 0; i < n; ++i) {
         const int ac = tolower(a[i]);
@@ -66,64 +75,6 @@ static inline int lyric_strncasecmp(const char *const restrict a, const char *co
             return 1;
     }
     return 0;
-}
-
-static inline bool lyric_match_string(FILE *file, const char *string) {
-    int c;
-    do {
-        c = fgetc(file);
-    } while (isspace(c));
-    if (c != '"') {
-        return false;
-    }
-    for (size_t i = 0; string[i] != '\0'; ++i) {
-        if (c == '\\') {
-            c = fgetc(file);
-            switch (c) {
-                case '\\': {
-                    if (string[i] != '\\')
-                        return false;
-                } break;
-                case 't': {
-                    if (string[i] != '\t')
-                        return false;
-                } break;
-                case 'n': {
-                    if (string[i] != '\n')
-                        return false;
-                } break;
-                case '"': {
-                    if (string[i] != '"')
-                        return false;
-                } break;
-                case 'x': {
-                    c = fgetc(file);
-                } break;
-            }
-        } else if (unlikely(c != string[i])) {
-            return false;
-        }
-        c = fgetc(file);
-    }
-    if (c != '"')
-        return false;
-    return true;
-}
-
-static inline bool lyric_match_token(FILE *file, const char *string) {
-    int c;
-    do {
-        c = fgetc(file);
-    } while (isspace(c));
-    for (size_t i = 0; string[i] != '\0'; ++i) {
-        if (c != string[i])
-            return false;
-        c = fgetc(file);
-    }
-    if (isalpha(c))
-        return false;
-    ungetc(c, file);
-    return true;
 }
 
 #endif // __HELPERS_H__

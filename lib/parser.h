@@ -13,11 +13,13 @@ enum lyric_parser_status {
     lyric_parser_status_start,
     lyric_parser_status_lyric,
     lyric_parser_status_lyric_tag,
-    lyric_parser_status_lyric_tag_entry,
+    lyric_parser_status_lyric_tag_name,
+    lyric_parser_status_lyric_tag_value,
     lyric_parser_status_lyric_singers,
     lyric_parser_status_lyric_singer,
     lyric_parser_status_lyric_singer_tag,
-    lyric_parser_status_lyric_singer_tag_entry,
+    lyric_parser_status_lyric_singer_tag_name,
+    lyric_parser_status_lyric_singer_tag_value,
     lyric_parser_status_lyric_singer_content,
     lyric_parser_status_lyric_singer_content_line,
     lyric_parser_status_lyric_singer_content_line_word,
@@ -28,9 +30,22 @@ enum lyric_parser_status {
 struct _Parser {
     enum lyric_parser_status status;
     enum lyric_parser_error error;
-    void *current;
     size_t lines, col;
-    struct _Lyric *lyric;
+    struct _Lyric *lyrics;
+    size_t size;
+    size_t _malloc_size;
+    struct _Lyric *_d0;
+    union {
+        struct _Tag *t;
+        struct _Singer *s;
+    } _d1;
+    union {
+        char *k;
+        struct _Tag *t;
+    } _d2;
+    union {
+        char *k;
+    } _d3;
 };
 typedef struct _Parser Parser;
 

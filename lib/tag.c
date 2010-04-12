@@ -107,35 +107,49 @@ void lyric_tag_delete(Tag *const restrict tag) {
     lyric_free(tag);
 }
 
+static size_t _find_name(Tag *const restrict tag, const char *const restrict name, bool *const restrict exact) {
+    *exact = false;
+    if (tag->size == 0)
+        return 0;
+    else {
+        size_t begin = 0, end = tag->size - 1;
+        while (begin < end) {
+            size_t mid = (end - begin) / 2 + begin;
+            int cmp = strcmp(tag->name[mid], name);
+            if (cmp > 0) {
+                begin = mid;
+            } else if (cmp < 0) {
+                end = mid;
+            } else {
+                *exact = true;
+                return mid;
+            }
+        }
+        return begin;
+    }
+}
+
 bool lyric_tag_insert(Tag *const restrict tag, const char *const restrict name, const char *const restrict value) {
     if (unlikely(tag == NULL || name == NULL || value == NULL))
         return false;
-    size_t begin = 0, end = tag->size - 1;
-    while (begin < end) {
-        size_t mid = (end - begin) / 2 + begin;
-        int cmp = strcmp(tag->name[mid], name);
-        if (cmp > 0) {
-            begin = mid;
-        } else if (cmp < 0) {
-            end = mid;
-        } else {
-            char *new_name = lyric_strdup(name);
-            if (unlikely(new_name == NULL)) {
-                return false;
-            }
-            char *new_value = lyric_strdup(value);
-            if (unlikely(new_value == NULL)) {
-                lyric_free(new_value);
-                return false;
-            }
-            lyric_free(tag->name[mid]);
-            lyric_free(tag->value[mid]);
-            tag->name[mid] = new_name;
-            tag->value[mid] = new_value;
-            return true;
+    bool exact;
+    const size_t position = _find_name(tag, name, &exact);
+    if (exact) {
+        char *new_name = lyric_strdup(name);
+        if (unlikely(new_name == NULL)) {
+            return false;
         }
+        char *new_value = lyric_strdup(value);
+        if (unlikely(new_value == NULL)) {
+            lyric_free(new_value);
+            return false;
+        }
+        lyric_free(tag->name[position]);
+        lyric_free(tag->value[position]);
+        tag->name[position] = new_name;
+        tag->value[position] = new_value;
+        return true;
     }
-    const size_t position = begin;
     if (unlikely(tag->size == tag->_malloc_size)) {
         size_t size = tag->_malloc_size;
         void *const name_array = lyric_extend_array(tag->name, sizeof(char*), &size);

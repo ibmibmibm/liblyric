@@ -1,7 +1,5 @@
 include_directories(${LYRIC_SOURCE_DIR}/lib)
-include_directories(${LYRIC_SOURCE_DIR}/libjson)
 link_directories(${LYRIC_BINARY_DIR}/lib)
-link_directories(${LYRIC_SOURCE_DIR}/libjson)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 add_executable(lyric_check lyric_check.c)
-target_link_libraries(lyric_check lyric json)
+target_link_libraries(lyric_check lyric)
