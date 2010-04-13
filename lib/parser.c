@@ -208,7 +208,7 @@ static int _do_process_file(json_parser *const restrict parser, size_t *restrict
         for (uint32_t i = 0; i < processed; i++) {
             if (buffer[i] == '\n') {
                 *col = 0;
-                *lines++;
+                ++*lines;
             } else {
                 ++*col;
             }
@@ -247,10 +247,22 @@ bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict 
     return true;
 }
 
+Parser *lyric_parser_new(void) {
+    Parser *parser = lyric_alloc(sizeof(Parser));
+    if (unlikely(parser == NULL))
+        return NULL;
+    parser->status = lyric_parser_status_finish;
+    parser->error = lyric_parser_noerror;
+    parser->lines = parser->col = 0;
+    parser->lyrics = NULL;
+    parser->size = 0;
+    return parser;
+}
+
 Parser *lyric_parser_new_from_file(FILE *const restrict file) {
     if (unlikely(file == NULL))
         return NULL;
-    Parser *parser = lyric_alloc(sizeof(Parser));
+    Parser *parser = lyric_parser_new();
     if (unlikely(parser == NULL))
         return NULL;
     if (unlikely(!lyric_parser_from_file(parser, file))) {

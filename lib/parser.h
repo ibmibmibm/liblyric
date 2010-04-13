@@ -49,6 +49,7 @@ struct _Parser {
 };
 typedef struct _Parser Parser;
 
+Parser *lyric_parser_new(void);
 bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict filename);
 Parser *lyric_parser_new_from_file(FILE *const restrict filename);
 struct _Lyric *lyric_read_file(FILE *const restrict file);

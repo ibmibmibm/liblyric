@@ -1,25 +1,21 @@
 #ifndef __HELPERS_H__
 #define __HELPERS_H__
 
+#include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
-#include <stdint.h>
 
 #ifndef likely
-    #ifdef __GNUC__
-        #if __GNUC__ < 3
-            #define __builtin_expect(x, n) (x)
-        #endif
-
+    #if defined(__GNUC__) && __GNUC__ >= 3
         #define likely(x)   __builtin_expect(!!(x), 1)
         #define unlikely(x)   __builtin_expect(!!(x), 0)
     #else
-        #define likely(x) x
-        #define unlikely(x) x
+        #define likely(x) (x)
+        #define unlikely(x) (x)
     #endif
 #endif
 
@@ -30,7 +26,7 @@ static inline void *lyric_alloc(size_t size) {
 }
 
 static inline void *lyric_alloc_init(size_t size) {
-    return calloc(size, 1);
+    return calloc(1, size);
 }
 
 static inline void lyric_free(void *pointer) {
