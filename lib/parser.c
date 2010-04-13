@@ -43,12 +43,11 @@ static const char *const string_of_errors[] = {
     [JSON_ERROR_UNICODE_MISSING_LOW_SURROGATE] = "missing unicode low surrogate",
     [JSON_ERROR_UNICODE_UNEXPECTED_LOW_SURROGATE] = "unexpected unicode low surrogate",
     [JSON_ERROR_COMMA_OUT_OF_STRUCTURE] = "error comma out of structure",
-    [JSON_ERROR_CALLBACK] = "error in a callback"
+    [JSON_ERROR_CALLBACK] = "error in a callback",
 };
 
 static int _json_parser_callback(void *const restrict userdata, const int type, const char *const restrict data, const uint32_t length) {
     struct _Parser *parser = userdata;
-    printf("%d %*s\n", type, length, data);
     switch (parser->status) {
         case lyric_parser_status_start: {
             if (type == JSON_ARRAY_BEGIN) {
@@ -85,6 +84,8 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                 } else {
                     return JSON_ERROR_CALLBACK;
                 }
+            } else if (type == JSON_OBJECT_END) {
+                parser->status = lyric_parser_status_finish;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
@@ -123,6 +124,7 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         case lyric_parser_status_lyric_singers: {
             if (type == JSON_ARRAY_BEGIN) {
             } else if (type == JSON_ARRAY_END) {
+                parser->status = lyric_parser_status_lyric;
             } else if (type == JSON_OBJECT_BEGIN) {
                 parser->_d1.s = lyric_singer_new();
                 if (parser->_d1.s == NULL)
@@ -142,6 +144,8 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                 } else {
                     return JSON_ERROR_CALLBACK;
                 }
+            } else if (type == JSON_OBJECT_END) {
+                parser->status = lyric_parser_status_lyric_singers;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
@@ -178,14 +182,70 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
             }
         } return 0;
         case lyric_parser_status_lyric_singer_content: {
+            if (type == JSON_ARRAY_BEGIN) {
+                parser->status = lyric_parser_status_lyric_singer_content_line;
+            } else if (type == JSON_ARRAY_END) {
+                parser->status = lyric_parser_status_lyric_singer;
+            } else {
+                return JSON_ERROR_CALLBACK;
+            }
         } return 0;
         case lyric_parser_status_lyric_singer_content_line: {
+            if (type == JSON_ARRAY_BEGIN) {
+                parser->status = lyric_parser_status_lyric_singer_content_line_offset;
+            } else if (type == JSON_ARRAY_END) {
+                parser->status = lyric_parser_status_lyric_singer;
+            } else {
+                return JSON_ERROR_CALLBACK;
+            }
+        } return 0;
+        case lyric_parser_status_lyric_singer_content_line_offset: {
+            if (type == JSON_STRING) {
+                parser->status = lyric_parser_status_lyric_singer_content_line_word;
+            } else {
+                return JSON_ERROR_CALLBACK;
+            }
         } return 0;
         case lyric_parser_status_lyric_singer_content_line_word: {
+            if (type == JSON_STRING) {
+                parser->status = lyric_parser_status_lyric_singer_content_line_time;
+            } else if (type == JSON_ARRAY_END) {
+                parser->status = lyric_parser_status_lyric_singer_content_line;
+            } else {
+                return JSON_ERROR_CALLBACK;
+            }
         } return 0;
         case lyric_parser_status_lyric_singer_content_line_time: {
+            if (type == JSON_INT) {
+                parser->status = lyric_parser_status_lyric_singer_content_line_word;
+            } else {
+                return JSON_ERROR_CALLBACK;
+            }
         } return 0;
         case lyric_parser_status_finish: {
+            if (type == JSON_OBJECT_BEGIN) {
+                if (parser->lyrics == NULL) {
+                    parser->lyrics = lyric_lyric_new();
+                    parser->size = 1;
+                    parser->_malloc_size = 1;
+                    parser->_d0 = parser->lyrics;
+                } else {
+                    if (parser->_malloc_size == parser->size) {
+                        struct _Lyric *array = lyric_extend_array(parser->lyrics, sizeof(struct _Lyric), &parser->_malloc_size);
+                        if (array == NULL)
+                            return JSON_ERROR_NO_MEMORY;
+                        parser->lyrics = array;
+                    }
+                    if (!lyric_lyric_create(&parser->lyrics[parser->size]))
+                        return JSON_ERROR_NO_MEMORY;
+                    ++parser->size;
+                    parser->_d0 = &parser->lyrics[parser->size - 1];
+                }
+                parser->status = lyric_parser_status_lyric;
+            } else if (type == JSON_OBJECT_END) {
+            } else {
+                return JSON_ERROR_CALLBACK;
+            }
         } return 0;
         default:
             return JSON_ERROR_CALLBACK;
@@ -240,8 +300,7 @@ bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict 
         fprintf(stderr, "line %zd, col %zd: [code=%d] %s\n", parser->lines, parser->col, ret, string_of_errors[ret]);
         return false;
     }
-    ret = json_parser_is_done(&_parser);
-    if (ret != 0) {
+    if (json_parser_is_done(&_parser) == 0 || parser->status != lyric_parser_status_finish) {
         return false;
     }
     return true;
@@ -251,7 +310,7 @@ Parser *lyric_parser_new(void) {
     Parser *parser = lyric_alloc(sizeof(Parser));
     if (unlikely(parser == NULL))
         return NULL;
-    parser->status = lyric_parser_status_finish;
+    parser->status = lyric_parser_status_start;
     parser->error = lyric_parser_noerror;
     parser->lines = parser->col = 0;
     parser->lyrics = NULL;

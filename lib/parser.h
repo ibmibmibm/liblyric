@@ -22,6 +22,7 @@ enum lyric_parser_status {
     lyric_parser_status_lyric_singer_tag_value,
     lyric_parser_status_lyric_singer_content,
     lyric_parser_status_lyric_singer_content_line,
+    lyric_parser_status_lyric_singer_content_line_offset,
     lyric_parser_status_lyric_singer_content_line_word,
     lyric_parser_status_lyric_singer_content_line_time,
     lyric_parser_status_finish,
