@@ -1,32 +1,6 @@
 #include <json.h>
 #include "parser.h"
 
-enum json_type {
-    JSON_TYPE_NULL,
-    JSON_TYPE_INT,
-    JSON_TYPE_DOUBLE,
-    JSON_TYPE_BOOL,
-    JSON_TYPE_STRING,
-    JSON_TYPE_ARRAY,
-    JSON_TYPE_OBJECT,
-};
-
-struct json_val_element {
-    char *key;
-    uint32_t key_length;
-    struct json_val *val;
-};
-
-typedef struct json_val {
-    json_type type;
-    int length;
-    union {
-        char *data;
-        struct json_val **array;
-        struct json_val_element **object;
-    } u;
-} json_val_t;
-
 static const char lyric_string_tag[] = {'t', 'a', 'g'};
 static const char lyric_string_singers[] = {'s', 'i', 'n', 'g', 'e', 'r', 's'};
 static const char lyric_string_content[] = {'c', 'o', 'n', 't', 'e', 'n', 't'};
