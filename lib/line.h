@@ -13,6 +13,8 @@ struct _Line {
 };
 typedef struct _Line Line;
 
+Line *lyric_line_new(void);
+bool lyric_line_create(Line *const restrict line);
 bool lyric_line_copy(Line* const restrict line, const Line *const restrict _line);
 void lyric_line_clean(Line* const restrict line);
 

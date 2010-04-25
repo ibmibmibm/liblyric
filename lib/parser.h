@@ -43,6 +43,7 @@ struct _Parser {
     union {
         char *k;
         struct _Tag *t;
+        struct _Line *l;
     } _d2;
     union {
         char *k;

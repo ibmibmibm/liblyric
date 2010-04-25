@@ -22,6 +22,7 @@ static const char *const string_of_errors[] = {
 
 static int _json_parser_callback(void *const restrict userdata, const int type, const char *const restrict data, const uint32_t length) {
     struct _Parser *parser = userdata;
+    // TODO: no mem detect
     switch (parser->status) {
         case lyric_parser_status_start: {
             if (type == JSON_ARRAY_BEGIN) {
@@ -175,6 +176,10 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         } return 0;
         case lyric_parser_status_lyric_singer_content_line_offset: {
             if (type == JSON_STRING) {
+                parser->_d2.l = lyric_line_new();
+                if (unlikely(!lyric_time_create_from_string(&(parser->_d2.l->time), data, length))) {
+                    return JSON_ERROR_CALLBACK;
+                }
                 parser->status = lyric_parser_status_lyric_singer_content_line_word;
             } else {
                 return JSON_ERROR_CALLBACK;
