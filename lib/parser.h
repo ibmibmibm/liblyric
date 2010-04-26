@@ -56,5 +56,7 @@ bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict 
 Parser *lyric_parser_new_from_file(FILE *const restrict filename);
 struct _Lyric *lyric_read_file(FILE *const restrict file);
 void lyric_write_file(const struct _Lyric *const restrict lyric, FILE *const restrict file);
+void lyric_parser_clean(Parser *const restrict parser);
+void lyric_parser_delete(Parser *const restrict parser);
 
 #endif // __PARSER_H__

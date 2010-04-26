@@ -101,9 +101,13 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
             } else if (type == JSON_ARRAY_END) {
                 parser->status = lyric_parser_status_lyric;
             } else if (type == JSON_OBJECT_BEGIN) {
-                parser->_d1.s = lyric_singer_new();
-                if (parser->_d1.s == NULL)
+                Singer singer;
+                lyric_singer_create(&singer);
+                bool result = lyric_lyric_push_back(parser->_d0, &singer);
+                lyric_singer_clean(&singer);
+                if (!result)
                     return JSON_ERROR_NO_MEMORY;
+                parser->_d1.s = &parser->_d0->singers[parser->_d0->singer_size - 1];
                 parser->status = lyric_parser_status_lyric_singer;
             } else {
                 return JSON_ERROR_CALLBACK;
@@ -176,10 +180,17 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         } return 0;
         case lyric_parser_status_lyric_singer_content_line_offset: {
             if (type == JSON_STRING) {
-                parser->_d2.l = lyric_line_new();
-                if (unlikely(!lyric_time_create_from_string(&(parser->_d2.l->time), data, length))) {
+                // TODO: no mem detect
+                Line line;
+                lyric_line_create(&line);
+                bool result = lyric_time_create_from_string(&line.time, data, length);
+                if (unlikely(!result)) {
+                    lyric_line_clean(&line);
                     return JSON_ERROR_CALLBACK;
                 }
+                lyric_singer_push_back(parser->_d1.s, &line);
+                lyric_line_clean(&line);
+                parser->_d2.l = &parser->_d1.s->lines[parser->_d1.s->line_size - 1];
                 parser->status = lyric_parser_status_lyric_singer_content_line_word;
             } else {
                 return JSON_ERROR_CALLBACK;
@@ -187,6 +198,7 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         } return 0;
         case lyric_parser_status_lyric_singer_content_line_word: {
             if (type == JSON_STRING) {
+                parser->_d3.k = lyric_strndup(data, length);
                 parser->status = lyric_parser_status_lyric_singer_content_line_time;
             } else if (type == JSON_ARRAY_END) {
                 parser->status = lyric_parser_status_lyric_singer_content_line;
@@ -196,6 +208,14 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         } return 0;
         case lyric_parser_status_lyric_singer_content_line_time: {
             if (type == JSON_INT) {
+                Time time;
+                lyric_time_create_from_literal(&time, data, length);
+                Word word;
+                lyric_word_create_from_data(&word, &time, parser->_d3.k);
+                lyric_free(parser->_d3.k);
+                lyric_time_clean(&time);
+                lyric_line_push_back(parser->_d2.l, &word);
+                lyric_word_clean(&word);
                 parser->status = lyric_parser_status_lyric_singer_content_line_word;
             } else {
                 return JSON_ERROR_CALLBACK;
@@ -314,10 +334,64 @@ Lyric *lyric_read_file(FILE *const restrict file) {
     Parser *parser = lyric_parser_new_from_file(file);
     if (unlikely(parser == NULL))
         return NULL;
-    Lyric *result = parser->lyrics;
-    lyric_free(parser);
+    Lyric *result = lyric_lyric_new_copy(parser->lyrics);
+    lyric_parser_delete(parser);
     return result;
 }
 
 void lyric_write_file(const Lyric *const restrict lyric, FILE *const restrict file) {
+    if (unlikely(lyric == NULL || file == NULL))
+        return;
+    fprintf(file, "{\n");
+    fprintf(file, "    \"tag\": {\n");
+    for (size_t i = 0; i < lyric->tag.size; ++i) {
+        fprintf(file, "        \"%s\": \"%s\",\n", lyric->tag.name[i], lyric->tag.value[i]);
+    }
+    fprintf(file, "    },\n");
+    fprintf(file, "    \"singers\": [\n");
+    for (size_t i = 0; i < lyric->singer_size; ++i) {
+        fprintf(file, "        {\n");
+        fprintf(file, "            \"tag\": {\n");
+        for (size_t j = 0; j < lyric->singers[i].tag.size; ++j) {
+            fprintf(file, "                \"%s\": \"%s\",\n", lyric->singers[i].tag.name[j], lyric->singers[i].tag.value[j]);
+        }
+        fprintf(file, "            },\n");
+        fprintf(file, "            \"content\": [\n");
+        for (size_t j = 0; j < lyric->singers[i].line_size; ++j) {
+            const char *const time_string = lyric_time_to_new_string(&lyric->singers[i].lines[j].time);
+            fprintf(file, "                [\"%s\"", time_string);
+            lyric_free(time_string);
+            for (size_t k = 0; k < lyric->singers[i].lines[j].word_size; ++k) {
+                fprintf(file, ", \"%s\", %zd", lyric->singers[i].lines[j].words[k].string, lyric_time_to_literal(&lyric->singers[i].lines[j].words[k].time));
+            }
+            if (j + 1 < lyric->singers[i].line_size) {
+                fprintf(file, "],\n");
+            } else {
+                fprintf(file, "]\n");
+            }
+        }
+        fprintf(file, "            ]\n");
+        if (i + 1 < lyric->singer_size) {
+            fprintf(file, "        },\n");
+        } else {
+            fprintf(file, "        }\n");
+        }
+    }
+    fprintf(file, "    ]\n");
+    fprintf(file, "}\n");
+}
+
+void lyric_parser_clean(Parser *const restrict parser) {
+    if (unlikely(parser == NULL))
+        return;
+    for (size_t i = 0; i < parser->size; ++i)
+        lyric_lyric_clean(&parser->lyrics[i]);
+    lyric_free(parser->lyrics);
+}
+
+void lyric_parser_delete(Parser *const restrict parser) {
+    if (unlikely(parser == NULL))
+        return;
+    lyric_parser_clean(parser);
+    lyric_free(parser);
 }

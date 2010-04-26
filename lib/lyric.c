@@ -34,7 +34,7 @@ bool lyric_lyric_copy(Lyric* const restrict lyric, const Lyric *const restrict _
     if (unlikely(lyric->singers == NULL)) {
         goto err1;
     }
-    for (lyric->singer_size = 0; lyric->singer_size < lyric->singer_size; ++lyric->singer_size) {
+    for (lyric->singer_size = 0; lyric->singer_size < size; ++lyric->singer_size) {
         if (unlikely(!lyric_singer_copy(&lyric->singers[lyric->singer_size], &_lyric->singers[lyric->singer_size]))) {
             goto err2;
         }

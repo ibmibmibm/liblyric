@@ -41,7 +41,7 @@ static inline void *lyric_resize_array(void *pointer, size_t size, size_t *array
 }
 
 static inline void *lyric_extend_array(void *pointer, size_t size, size_t *array_size) {
-    return lyric_resize_array(pointer, size, array_size, *array_size * 2);
+    return lyric_resize_array(pointer, size, array_size, *array_size == 0 ? 1 : *array_size * 2);
 }
 
 static inline char *lyric_strdup(const char *const restrict pointer) {
@@ -71,6 +71,31 @@ static inline int lyric_strncasecmp(const char *const restrict a, const char *co
             return 1;
     }
     return 0;
+}
+
+static inline void lyric_strreverse(char*restrict begin, char*restrict end) {
+    char aux;
+    while (begin < end) {
+        aux = *begin;
+        *begin++ = *end;
+        *end-- = aux;
+    }
+}
+
+static inline lyric_ultostr(unsigned long int value, size_t padding, char *restrict string, char **restrict endpos) {
+    char *cursor = string;
+    char *min_endpos = string + padding;
+    do {
+        *cursor++ = (char) ((value % 10) + '0');
+        value /= 10;
+    } while (value != 0);
+    while (cursor < min_endpos) {
+        *cursor++ = '0';
+    }
+    *cursor = '\0';
+    if (endpos != NULL)
+        *endpos = cursor;
+    lyric_strreverse(string, cursor - 1);
 }
 
 #endif // __HELPERS_H__

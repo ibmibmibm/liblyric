@@ -35,7 +35,7 @@ bool lyric_tag_copy(Tag* const restrict tag, const Tag *const restrict _tag) {
     if (unlikely(tag->value == NULL)) {
         goto err1;
     }
-    for (tag->size = 0; tag->size < tag->size; ++tag->size) {
+    for (tag->size = 0; tag->size < size; ++tag->size) {
         tag->name[tag->size] = lyric_strdup(_tag->name[tag->size]);
         if (unlikely(tag->name[tag->size] == NULL)) {
             goto err2;
@@ -92,8 +92,8 @@ err0:
 void lyric_tag_clean(Tag *const restrict tag) {
     if (likely(tag != NULL)) {
         for (size_t i = 0; i < tag->size; ++i) {
-            lyric_free(&tag->name[i]);
-            lyric_free(&tag->value[i]);
+            lyric_free(tag->name[i]);
+            lyric_free(tag->value[i]);
         }
         lyric_free(tag->name);
         lyric_free(tag->value);
@@ -158,7 +158,7 @@ bool lyric_tag_insert(Tag *const restrict tag, const char *const restrict name, 
         }
         tag->name = name_array;
         size = tag->_malloc_size;
-        void *const value_array = lyric_extend_array(tag->name, sizeof(char*), &size);
+        void *const value_array = lyric_extend_array(tag->value, sizeof(char*), &size);
         if (unlikely(value_array == NULL)) {
             return false;
         }
