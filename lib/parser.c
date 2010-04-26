@@ -85,7 +85,6 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         case lyric_parser_status_lyric_tag_value: {
             if (type == JSON_STRING) {
                 char *value = lyric_strndup(data, length);
-                printf("tag %s=%s\n", parser->_d2.k, value);
                 bool result = lyric_tag_insert(parser->_d1.t, parser->_d2.k, value);
                 lyric_free(value);
                 lyric_free(parser->_d2.k);
@@ -149,7 +148,6 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         case lyric_parser_status_lyric_singer_tag_value: {
             if (type == JSON_STRING) {
                 char *value = lyric_strndup(data, length);
-                printf("singer tag %s=%s\n", parser->_d3.k, value);
                 bool result = lyric_tag_insert(parser->_d2.t, parser->_d3.k, value);
                 lyric_free(value);
                 lyric_free(parser->_d3.k);
@@ -358,7 +356,7 @@ void lyric_write_file(const Lyric *const restrict lyric, FILE *const restrict fi
         fprintf(file, "            },\n");
         fprintf(file, "            \"content\": [\n");
         for (size_t j = 0; j < lyric->singers[i].line_size; ++j) {
-            const char *const time_string = lyric_time_to_new_string(&lyric->singers[i].lines[j].time);
+            char *const time_string = lyric_time_to_new_string(&lyric->singers[i].lines[j].time);
             fprintf(file, "                [\"%s\"", time_string);
             lyric_free(time_string);
             for (size_t k = 0; k < lyric->singers[i].lines[j].word_size; ++k) {

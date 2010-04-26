@@ -43,7 +43,7 @@ bool lyric_line_copy(Line* const restrict line, const Line *const restrict _line
         goto err0;
     }
     const size_t size = _line->word_size;
-    line->_malloc_word_size = size == 0;
+    line->_malloc_word_size = size;
     line->words = (Word*)lyric_alloc(sizeof(Word) * size);
     if (unlikely(line->words == NULL)) {
         goto err1;
