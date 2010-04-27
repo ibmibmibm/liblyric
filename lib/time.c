@@ -132,7 +132,7 @@ void lyric_time_clean(Time* const restrict time) {
 
 size_t lyric_time_to_literal(const Time *const restrict time) {
     if (unlikely(time == NULL)) {
-        return NULL;
+        return 0;
     }
     return time->second * 1000 + time->minisecond;
 }

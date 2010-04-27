@@ -133,5 +133,5 @@ bool lyric_lyric_push_back(Lyric *const restrict lyric, const Singer *const rest
 }
 
 void lyric_lyric_pop_back(Lyric *const restrict lyric, Singer *const restrict singer) {
-    return lyric_lyric_remove(lyric, lyric->singer_size - 1, singer);
+    lyric_lyric_remove(lyric, lyric->singer_size - 1, singer);
 }

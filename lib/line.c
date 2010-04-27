@@ -110,5 +110,5 @@ bool lyric_line_push_back(Line *const restrict line, const Word *const restrict 
 }
 
 void lyric_line_pop_back(Line *const restrict line, Word *const restrict word) {
-    return lyric_line_remove(line, line->word_size - 1, word);
+    lyric_line_remove(line, line->word_size - 1, word);
 }
