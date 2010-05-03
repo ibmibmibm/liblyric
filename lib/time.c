@@ -1,20 +1,5 @@
 #include "time.h"
 
-Time *lyric_time_new_from_string(const char *string, const size_t length) {
-    Time *time = (Time*)lyric_alloc(sizeof(Time));
-    if (unlikely(time == NULL)) {
-        goto err0;
-    }
-    if (unlikely(!lyric_time_create_from_string(time, string, length))) {
-        goto err1;
-    }
-    return time;
-err1:
-    lyric_free(time);
-err0:
-    return NULL;
-}
-
 bool lyric_time_create_from_string(Time *const restrict time, const char *const restrict string, const size_t length) {
     if (unlikely(time == NULL)) {
         return false;

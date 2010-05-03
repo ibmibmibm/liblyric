@@ -17,21 +17,6 @@ err0:
     return false;
 }
 
-Line *lyric_line_new(void) {
-    Line *line = (Line*)lyric_alloc(sizeof(Line));
-    if (unlikely(line == NULL)) {
-        goto err0;
-    }
-    if (unlikely(!lyric_line_create(line))) {
-        goto err1;
-    }
-    return line;
-err1:
-    lyric_free(line);
-err0:
-    return NULL;
-}
-
 bool lyric_line_copy(Line* const restrict line, const Line *const restrict _line) {
     if (unlikely(line == NULL || _line == NULL)) {
         goto err0;
