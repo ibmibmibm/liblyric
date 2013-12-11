@@ -1,9 +1,9 @@
 #include <json.h>
 #include "parser.h"
 
-static const char lyric_string_tag[] = {'t', 'a', 'g'};
+static const char lyric_string_tags[] = {'t', 'a', 'g', 's'};
 static const char lyric_string_singers[] = {'s', 'i', 'n', 'g', 'e', 'r', 's'};
-static const char lyric_string_content[] = {'c', 'o', 'n', 't', 'e', 'n', 't'};
+static const char lyric_string_contents[] = {'c', 'o', 'n', 't', 'e', 'n', 't', 's'};
 
 static const char *const string_of_errors[] = {
     [JSON_ERROR_NO_MEMORY] = "out of memory",
@@ -51,9 +51,9 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         } return 0;
         case lyric_parser_status_lyric: {
             if (type == JSON_KEY) {
-                if (length == sizeof(lyric_string_tag) && lyric_strncasecmp(data, lyric_string_tag, sizeof(lyric_string_tag)) == 0) {
-                    parser->_d1.t = &parser->_d0->tag;
-                    parser->status = lyric_parser_status_lyric_tag;
+                if (length == sizeof(lyric_string_tags) && lyric_strncasecmp(data, lyric_string_tags, sizeof(lyric_string_tags)) == 0) {
+                    parser->_d1.t = &parser->_d0->tags;
+                    parser->status = lyric_parser_status_lyric_tags;
                 } else if (length == sizeof(lyric_string_singers) && lyric_strncasecmp(data, lyric_string_singers, sizeof(lyric_string_singers)) == 0) {
                     parser->status = lyric_parser_status_lyric_singers;
                 } else {
@@ -65,32 +65,32 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_tag: {
+        case lyric_parser_status_lyric_tags: {
             if (type == JSON_OBJECT_BEGIN) {
-                parser->status = lyric_parser_status_lyric_tag_name;
+                parser->status = lyric_parser_status_lyric_tags_name;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_tag_name: {
+        case lyric_parser_status_lyric_tags_name: {
             if (type == JSON_KEY) {
                 parser->_d2.k = lyric_strndup(data, length);
-                parser->status = lyric_parser_status_lyric_tag_value;
+                parser->status = lyric_parser_status_lyric_tags_value;
             } else if (type == JSON_OBJECT_END) {
                 parser->status = lyric_parser_status_lyric;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_tag_value: {
+        case lyric_parser_status_lyric_tags_value: {
             if (type == JSON_STRING) {
                 char *value = lyric_strndup(data, length);
-                bool result = lyric_tag_insert(parser->_d1.t, parser->_d2.k, value);
+                bool result = lyric_tags_insert(parser->_d1.t, parser->_d2.k, value);
                 lyric_free(value);
                 lyric_free(parser->_d2.k);
                 if (!result)
                     return JSON_ERROR_NO_MEMORY;
-                parser->status = lyric_parser_status_lyric_tag_name;
+                parser->status = lyric_parser_status_lyric_tags_name;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
@@ -114,11 +114,11 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         } return 0;
         case lyric_parser_status_lyric_singer: {
             if (type == JSON_KEY) {
-                if (length == sizeof(lyric_string_tag) && lyric_strncasecmp(data, lyric_string_tag, sizeof(lyric_string_tag)) == 0) {
-                    parser->_d2.t = &parser->_d1.s->tag;
-                    parser->status = lyric_parser_status_lyric_singer_tag;
-                } else if (length == sizeof(lyric_string_content) && lyric_strncasecmp(data, lyric_string_content, sizeof(lyric_string_content)) == 0) {
-                    parser->status = lyric_parser_status_lyric_singer_content;
+                if (length == sizeof(lyric_string_tags) && lyric_strncasecmp(data, lyric_string_tags, sizeof(lyric_string_tags)) == 0) {
+                    parser->_d2.t = &parser->_d1.s->tags;
+                    parser->status = lyric_parser_status_lyric_singer_tags;
+                } else if (length == sizeof(lyric_string_contents) && lyric_strncasecmp(data, lyric_string_contents, sizeof(lyric_string_contents)) == 0) {
+                    parser->status = lyric_parser_status_lyric_singer_contents;
                 } else {
                     return JSON_ERROR_CALLBACK;
                 }
@@ -128,55 +128,55 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_tag: {
+        case lyric_parser_status_lyric_singer_tags: {
             if (type == JSON_OBJECT_BEGIN) {
-                parser->status = lyric_parser_status_lyric_singer_tag_name;
+                parser->status = lyric_parser_status_lyric_singer_tags_name;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_tag_name: {
+        case lyric_parser_status_lyric_singer_tags_name: {
             if (type == JSON_KEY) {
                 parser->_d3.k = lyric_strndup(data, length);
-                parser->status = lyric_parser_status_lyric_singer_tag_value;
+                parser->status = lyric_parser_status_lyric_singer_tags_value;
             } else if (type == JSON_OBJECT_END) {
                 parser->status = lyric_parser_status_lyric_singer;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_tag_value: {
+        case lyric_parser_status_lyric_singer_tags_value: {
             if (type == JSON_STRING) {
                 char *value = lyric_strndup(data, length);
-                bool result = lyric_tag_insert(parser->_d2.t, parser->_d3.k, value);
+                bool result = lyric_tags_insert(parser->_d2.t, parser->_d3.k, value);
                 lyric_free(value);
                 lyric_free(parser->_d3.k);
                 if (!result)
                     return JSON_ERROR_NO_MEMORY;
-                parser->status = lyric_parser_status_lyric_singer_tag_name;
+                parser->status = lyric_parser_status_lyric_singer_tags_name;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_content: {
+        case lyric_parser_status_lyric_singer_contents: {
             if (type == JSON_ARRAY_BEGIN) {
-                parser->status = lyric_parser_status_lyric_singer_content_line;
+                parser->status = lyric_parser_status_lyric_singer_contents_line;
             } else if (type == JSON_ARRAY_END) {
                 parser->status = lyric_parser_status_lyric_singer;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_content_line: {
+        case lyric_parser_status_lyric_singer_contents_line: {
             if (type == JSON_ARRAY_BEGIN) {
-                parser->status = lyric_parser_status_lyric_singer_content_line_offset;
+                parser->status = lyric_parser_status_lyric_singer_contents_line_offset;
             } else if (type == JSON_ARRAY_END) {
                 parser->status = lyric_parser_status_lyric_singer;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_content_line_offset: {
+        case lyric_parser_status_lyric_singer_contents_line_offset: {
             if (type == JSON_STRING) {
                 // TODO: no mem detect
                 Line line;
@@ -189,22 +189,22 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                 lyric_singer_push_back(parser->_d1.s, &line);
                 lyric_line_clean(&line);
                 parser->_d2.l = &parser->_d1.s->lines[parser->_d1.s->line_size - 1];
-                parser->status = lyric_parser_status_lyric_singer_content_line_word;
+                parser->status = lyric_parser_status_lyric_singer_contents_line_word;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_content_line_word: {
+        case lyric_parser_status_lyric_singer_contents_line_word: {
             if (type == JSON_STRING) {
                 parser->_d3.k = lyric_strndup(data, length);
-                parser->status = lyric_parser_status_lyric_singer_content_line_time;
+                parser->status = lyric_parser_status_lyric_singer_contents_line_time;
             } else if (type == JSON_ARRAY_END) {
-                parser->status = lyric_parser_status_lyric_singer_content_line;
+                parser->status = lyric_parser_status_lyric_singer_contents_line;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
         } return 0;
-        case lyric_parser_status_lyric_singer_content_line_time: {
+        case lyric_parser_status_lyric_singer_contents_line_time: {
             if (type == JSON_INT) {
                 Time time;
                 lyric_time_create_from_literal(&time, data, length);
@@ -214,7 +214,7 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                 lyric_time_clean(&time);
                 lyric_line_push_back(parser->_d2.l, &word);
                 lyric_word_clean(&word);
-                parser->status = lyric_parser_status_lyric_singer_content_line_word;
+                parser->status = lyric_parser_status_lyric_singer_contents_line_word;
             } else {
                 return JSON_ERROR_CALLBACK;
             }
@@ -341,20 +341,20 @@ void lyric_write_file(const Lyric *const restrict lyric, FILE *const restrict fi
     if (unlikely(lyric == NULL || file == NULL))
         return;
     fprintf(file, "{\n");
-    fprintf(file, "    \"tag\": {\n");
-    for (size_t i = 0; i < lyric->tag.size; ++i) {
-        fprintf(file, "        \"%s\": \"%s\",\n", lyric->tag.name[i], lyric->tag.value[i]);
+    fprintf(file, "    \"tags\": {\n");
+    for (size_t i = 0; i < lyric->tags.size; ++i) {
+        fprintf(file, "        \"%s\": \"%s\",\n", lyric->tags.name[i], lyric->tags.value[i]);
     }
     fprintf(file, "    },\n");
     fprintf(file, "    \"singers\": [\n");
     for (size_t i = 0; i < lyric->singer_size; ++i) {
         fprintf(file, "        {\n");
-        fprintf(file, "            \"tag\": {\n");
-        for (size_t j = 0; j < lyric->singers[i].tag.size; ++j) {
-            fprintf(file, "                \"%s\": \"%s\",\n", lyric->singers[i].tag.name[j], lyric->singers[i].tag.value[j]);
+        fprintf(file, "            \"tags\": {\n");
+        for (size_t j = 0; j < lyric->singers[i].tags.size; ++j) {
+            fprintf(file, "                \"%s\": \"%s\",\n", lyric->singers[i].tags.name[j], lyric->singers[i].tags.value[j]);
         }
         fprintf(file, "            },\n");
-        fprintf(file, "            \"content\": [\n");
+        fprintf(file, "            \"contents\": [\n");
         for (size_t j = 0; j < lyric->singers[i].line_size; ++j) {
             char *const time_string = lyric_time_to_new_string(&lyric->singers[i].lines[j].time);
             fprintf(file, "                [\"%s\"", time_string);

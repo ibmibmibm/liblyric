@@ -12,19 +12,19 @@ enum lyric_parser_error {
 enum lyric_parser_status {
     lyric_parser_status_start,
     lyric_parser_status_lyric,
-    lyric_parser_status_lyric_tag,
-    lyric_parser_status_lyric_tag_name,
-    lyric_parser_status_lyric_tag_value,
+    lyric_parser_status_lyric_tags,
+    lyric_parser_status_lyric_tags_name,
+    lyric_parser_status_lyric_tags_value,
     lyric_parser_status_lyric_singers,
     lyric_parser_status_lyric_singer,
-    lyric_parser_status_lyric_singer_tag,
-    lyric_parser_status_lyric_singer_tag_name,
-    lyric_parser_status_lyric_singer_tag_value,
-    lyric_parser_status_lyric_singer_content,
-    lyric_parser_status_lyric_singer_content_line,
-    lyric_parser_status_lyric_singer_content_line_offset,
-    lyric_parser_status_lyric_singer_content_line_word,
-    lyric_parser_status_lyric_singer_content_line_time,
+    lyric_parser_status_lyric_singer_tags,
+    lyric_parser_status_lyric_singer_tags_name,
+    lyric_parser_status_lyric_singer_tags_value,
+    lyric_parser_status_lyric_singer_contents,
+    lyric_parser_status_lyric_singer_contents_line,
+    lyric_parser_status_lyric_singer_contents_line_offset,
+    lyric_parser_status_lyric_singer_contents_line_word,
+    lyric_parser_status_lyric_singer_contents_line_time,
     lyric_parser_status_finish,
 };
 
@@ -37,12 +37,12 @@ struct _Parser {
     size_t _malloc_size;
     struct _Lyric *_d0;
     union {
-        struct _Tag *t;
+        struct _Tags *t;
         struct _Singer *s;
     } _d1;
     union {
         char *k;
-        struct _Tag *t;
+        struct _Tags *t;
         struct _Line *l;
     } _d2;
     union {

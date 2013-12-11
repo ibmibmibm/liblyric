@@ -1,25 +1,31 @@
 #include "time.h"
 
+enum {
+	TIME_PARSER_FLEXIBLE_LENGTH_BLOCK,
+	TIME_PARSER_FIXED_LENGTH_BLOCK,
+	TIME_PARSER_MINISECOND,
+};
+
 bool lyric_time_create_from_string(Time *const restrict time, const char *const restrict string, const size_t length) {
     if (unlikely(time == NULL)) {
         return false;
     }
     time->second = time->minisecond = 0;
-    size_t status = 0;
+    size_t status = TIME_PARSER_FLEXIBLE_LENGTH_BLOCK;
     size_t counter = 0;
     for (size_t i = 0; i < length; ++i) {
         switch (status) {
-            case 0: {
+            case TIME_PARSER_FLEXIBLE_LENGTH_BLOCK: {
                 if (isdigit(string[i])) {
                     time->second = time->second * 10 + (string[i] - '0');
                 } else if (string[i] == ':') {
                     time->second *= 60;
-                    status = 1;
+                    status = TIME_PARSER_FIXED_LENGTH_BLOCK;
                 } else {
                     return false;
                 }
             } break;
-            case 1: {
+            case TIME_PARSER_FIXED_LENGTH_BLOCK: {
                 if (isdigit(string[i])) {
                     if (counter == 2) {
                         return false;
@@ -30,33 +36,22 @@ bool lyric_time_create_from_string(Time *const restrict time, const char *const 
                         return false;
                     }
                     time->second *= 60;
-                    status = 2;
+                    status = TIME_PARSER_FIXED_LENGTH_BLOCK;
                     counter = 0;
-                } else {
-                    return false;
-                }
-                ++counter;
-            } break;
-            case 2: {
-                if (isdigit(string[i])) {
-                    if (counter == 2) {
-                        return false;
-                    }
-                    time->second = time->second * 10 + (string[i] - '0');
                 } else if (string[i] == '.') {
                     if (counter != 2) {
                         return false;
                     }
-                    status = 3;
+                    status = TIME_PARSER_MINISECOND;
                     counter = 0;
                 } else {
                     return false;
                 }
                 ++counter;
             } break;
-            case 3: {
+            case TIME_PARSER_MINISECOND: {
                 if (isdigit(string[i])) {
-                    if (counter == 3) {
+                    if (counter == 4) {
                         return false;
                     }
                     time->minisecond = time->minisecond * 10 + (string[i] - '0');
@@ -65,6 +60,12 @@ bool lyric_time_create_from_string(Time *const restrict time, const char *const 
                 }
                 ++counter;
             } break;
+        }
+    }
+    if (status == TIME_PARSER_MINISECOND) {
+        while (counter < 3) {
+            time->minisecond *= 10;
+            ++counter;
         }
     }
     return true;
@@ -143,9 +144,7 @@ char *lyric_time_to_new_string(const Time *const restrict time) {
     lyric_ultostr(min, 2, cursor, &cursor);
     *cursor++ = ':';
     lyric_ultostr(sec, 2, cursor, &cursor);
-    if (time->minisecond > 0) {
-        *cursor++ = '.';
-        lyric_ultostr(time->minisecond, 3, cursor, &cursor);
-    }
+    *cursor++ = '.';
+    lyric_ultostr(time->minisecond, 3, cursor, &cursor);
     return lyric_strdup(buffer);
 }

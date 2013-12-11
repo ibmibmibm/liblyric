@@ -2,12 +2,12 @@
 #define __LYRIC_H__
 
 #include "helpers.h"
-#include "tag.h"
+#include "tags.h"
 #include "singer.h"
 #include "parser.h"
 
 struct _Lyric {
-    struct _Tag tag;
+    struct _Tags tags;
     struct _Singer *singers;
     size_t singer_size;
     size_t _malloc_singer_size;

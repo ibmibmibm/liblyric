@@ -2,7 +2,7 @@
 #include "helpers.h"
 
 bool lyric_lyric_create(Lyric *const restrict lyric) {
-    if (unlikely(!lyric_tag_create(&lyric->tag))) {
+    if (unlikely(!lyric_tags_create(&lyric->tags))) {
         goto err0;
     }
     lyric->singer_size = 0;
@@ -13,7 +13,7 @@ bool lyric_lyric_create(Lyric *const restrict lyric) {
     }
     return true;
 err1:
-    lyric_tag_clean(&lyric->tag);
+    lyric_tags_clean(&lyric->tags);
 err0:
     return false;
 }
@@ -25,7 +25,7 @@ bool lyric_lyric_copy(Lyric* const restrict lyric, const Lyric *const restrict _
     if (unlikely(lyric == _lyric)) {
         return true;
     }
-    if (unlikely(!lyric_tag_copy(&lyric->tag, &_lyric->tag))) {
+    if (unlikely(!lyric_tags_copy(&lyric->tags, &_lyric->tags))) {
         goto err0;
     }
     const size_t size = _lyric->singer_size;
@@ -46,7 +46,7 @@ err2:
     }
     lyric_free(lyric->singers);
 err1:
-    lyric_tag_clean(&lyric->tag);
+    lyric_tags_clean(&lyric->tags);
 err0:
     return false;
 }
@@ -82,7 +82,7 @@ err0:
 }
 
 void lyric_lyric_clean(Lyric *const restrict lyric) {
-    lyric_tag_clean(&lyric->tag);
+    lyric_tags_clean(&lyric->tags);
     if (likely(lyric != NULL)) {
         for (size_t i = 0; i < lyric->singer_size; ++i) {
             lyric_singer_clean(&lyric->singers[i]);

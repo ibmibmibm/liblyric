@@ -1,11 +1,11 @@
 #ifndef __SINGER_H__
 #define __SINGER_H__
 
-#include "tag.h"
+#include "tags.h"
 #include "line.h"
 
 struct _Singer {
-    Tag tag;
+    Tags tags;
     Line *lines;
     size_t line_size;
     size_t _malloc_line_size;

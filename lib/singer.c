@@ -2,7 +2,7 @@
 #include "helpers.h"
 
 bool lyric_singer_create(Singer *const restrict singer) {
-    if (unlikely(!lyric_tag_create(&singer->tag))) {
+    if (unlikely(!lyric_tags_create(&singer->tags))) {
         goto err0;
     }
     singer->line_size = 0;
@@ -13,7 +13,7 @@ bool lyric_singer_create(Singer *const restrict singer) {
     }
     return true;
 err1:
-    lyric_tag_clean(&singer->tag);
+    lyric_tags_clean(&singer->tags);
 err0:
     return false;
 }
@@ -25,7 +25,7 @@ bool lyric_singer_copy(Singer* const restrict singer, const Singer *const restri
     if (unlikely(singer == _singer)) {
         return true;
     }
-    if (unlikely(!lyric_tag_copy(&singer->tag, &_singer->tag))) {
+    if (unlikely(!lyric_tags_copy(&singer->tags, &_singer->tags))) {
         goto err0;
     }
     const size_t size = _singer->line_size;
@@ -46,7 +46,7 @@ err2:
     }
     lyric_free(singer->lines);
 err1:
-    lyric_tag_clean(&singer->tag);
+    lyric_tags_clean(&singer->tags);
 err0:
     return false;
 }
@@ -82,7 +82,7 @@ err0:
 }
 
 void lyric_singer_clean(Singer *const restrict singer) {
-    lyric_tag_clean(&singer->tag);
+    lyric_tags_clean(&singer->tags);
     if (likely(singer != NULL)) {
         for (size_t i = 0; i < singer->line_size; ++i) {
             lyric_line_clean(&singer->lines[i]);
