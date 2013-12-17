@@ -1,9 +1,9 @@
 #include "time.h"
 
 enum {
-	TIME_PARSER_FLEXIBLE_LENGTH_BLOCK,
-	TIME_PARSER_FIXED_LENGTH_BLOCK,
-	TIME_PARSER_MINISECOND,
+    TIME_PARSER_FLEXIBLE_LENGTH_BLOCK,
+    TIME_PARSER_FIXED_LENGTH_BLOCK,
+    TIME_PARSER_MINISECOND,
 };
 
 bool lyric_time_create_from_string(Time *const restrict time, const char *const restrict string, const size_t length) {
