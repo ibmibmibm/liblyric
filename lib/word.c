@@ -53,3 +53,4 @@ void lyric_word_clean(Word *const restrict word) {
     lyric_time_clean(&word->time);
     lyric_free(word->string);
 }
+// vim:ts=4 sts=4 sw=4 et

@@ -113,9 +113,6 @@ err0:
     return false;
 }
 
-void lyric_time_clean(Time* const restrict time) {
-}
-
 size_t lyric_time_to_literal(const Time *const restrict time) {
     if (unlikely(time == NULL)) {
         return 0;
@@ -148,3 +145,4 @@ char *lyric_time_to_new_string(const Time *const restrict time) {
     lyric_ultostr(time->minisecond, 3, cursor, &cursor);
     return lyric_strdup(buffer);
 }
+// vim:ts=4 sts=4 sw=4 et

@@ -60,3 +60,4 @@ void lyric_parser_clean(Parser *const restrict parser);
 void lyric_parser_delete(Parser *const restrict parser);
 
 #endif // __PARSER_H__
+// vim:ts=4 sts=4 sw=4 et

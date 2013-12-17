@@ -23,3 +23,4 @@ bool lyric_tags_insert(Tags *const restrict tags, const char *const restrict nam
 void lyric_tags_remove(Tags *const restrict tags, char *const restrict name);
 
 #endif // __TAG_H__
+// vim:ts=4 sts=4 sw=4 et

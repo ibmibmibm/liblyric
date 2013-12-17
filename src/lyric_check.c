@@ -2,7 +2,7 @@
 #include <errno.h>
 #include <lyric.h>
 
-int usage(const char *program_name) {
+static int usage(const char *program_name) {
     if (errno != 0)
         perror(program_name);
     fprintf(stderr, "usage: %s filename.\n", program_name);
@@ -21,3 +21,4 @@ int main(int argc, const char *argv[]) {
     lyric_lyric_delete(lyric);
     return 0;
 }
+// vim:ts=4 sts=4 sw=4 et

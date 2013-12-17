@@ -144,3 +144,4 @@ static inline void lyric_ultostr(unsigned long int value, size_t padding, char *
 }
 
 #endif // __HELPERS_H__
+// vim:ts=4 sts=4 sw=4 et

@@ -207,3 +207,4 @@ void lyric_tags_remove(Tags *const restrict tags, char *const restrict name) {
     }
 }
 
+// vim:ts=4 sts=4 sw=4 et

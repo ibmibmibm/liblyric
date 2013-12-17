@@ -23,3 +23,4 @@ bool lyric_line_push_back(Line *const restrict line, const Word *const restrict 
 void lyric_line_pop_back(Line *const restrict line, Word *const restrict word);
 
 #endif // __LINE_H__
+// vim:ts=4 sts=4 sw=4 et

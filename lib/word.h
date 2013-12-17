@@ -16,3 +16,4 @@ bool lyric_word_copy(Word *const restrict word, const Word *const restrict _word
 void lyric_word_clean(Word *const restrict word);
 
 #endif // __WORD_H__
+// vim:ts=4 sts=4 sw=4 et

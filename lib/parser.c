@@ -393,3 +393,4 @@ void lyric_parser_delete(Parser *const restrict parser) {
     lyric_parser_clean(parser);
     lyric_free(parser);
 }
+// vim:ts=4 sts=4 sw=4 et

@@ -26,3 +26,4 @@ bool lyric_singer_push_back(Singer *const restrict singer, const Line *const res
 void lyric_singer_pop_back(Singer *const restrict singer, Line *const restrict line);
 
 #endif // __SINGER_H__
+// vim:ts=4 sts=4 sw=4 et

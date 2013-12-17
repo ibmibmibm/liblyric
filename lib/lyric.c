@@ -135,3 +135,4 @@ bool lyric_lyric_push_back(Lyric *const restrict lyric, const Singer *const rest
 void lyric_lyric_pop_back(Lyric *const restrict lyric, Singer *const restrict singer) {
     lyric_lyric_remove(lyric, lyric->singer_size - 1, singer);
 }
+// vim:ts=4 sts=4 sw=4 et
