@@ -22,10 +22,11 @@ static const char *const string_of_errors[] = {
 
 static int _json_parser_callback(void *const restrict userdata, const int type, const char *const restrict data, const uint32_t length) {
     struct _Parser *parser = userdata;
-    // TODO: no mem detect
+    // TODO: detect oom
     switch (parser->status) {
         case lyric_parser_status_start: {
             if (type == JSON_ARRAY_BEGIN) {
+                // set of objects
             } else if (type == JSON_OBJECT_BEGIN) {
                 if (parser->lyrics == NULL) {
                     parser->lyrics = lyric_lyric_new();

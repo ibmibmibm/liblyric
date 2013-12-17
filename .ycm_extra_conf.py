@@ -52,6 +52,8 @@ FLAGS = [
     'c',
     '-isystem',
     'lib',
+    '-isystem',
+    'libjson',
     '-I',
     '.',
 ]
