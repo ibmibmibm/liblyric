@@ -94,11 +94,6 @@ bool lyric_time_create_from_literal(Time *const restrict time, const char *strin
     return true;
 }
 
-bool lyric_time_create(Time *const restrict time) {
-    time->second = time->minisecond = 0;
-    return true;
-}
-
 bool lyric_time_copy(Time *const restrict time, const Time *const restrict _time) {
     if (unlikely(time == NULL || _time == NULL)) {
         goto err0;

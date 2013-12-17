@@ -10,11 +10,14 @@ static int usage(const char *program_name) {
 }
 
 int main(int argc, const char *argv[]) {
+    FILE *file;
+    Lyric *lyric;
+
     if (argc != 2)
         return usage(argv[0]);
 
-    FILE *file = fopen(argv[1], "r");
-    Lyric *lyric = lyric_read_file(file);
+    file = fopen(argv[1], "r");
+    lyric = lyric_read_file(file);
     if (lyric == NULL)
         return usage(argv[0]);
     lyric_write_file(lyric, stdout);
