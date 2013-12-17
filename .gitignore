@@ -1,3 +1,4 @@
 libjson/
 _build_/
 *.swp
+*.pyc
