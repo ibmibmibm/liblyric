@@ -22,6 +22,14 @@
     #endif
 #endif
 
+#ifndef __unused
+    #if defined(__GNUC__) && __GNUC__ >= 3
+        #define __unused __attribute__((unused))
+    #else
+        #define __unused
+    #endif
+#endif
+
 #define lyric_min(a, b) ((a) < (b) ? (a) : (b))
 
 #ifdef LEAK_LOG
