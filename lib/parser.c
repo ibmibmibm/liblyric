@@ -341,21 +341,28 @@ Lyric *lyric_read_file(FILE *const restrict file) {
 void lyric_write_file(const Lyric *const restrict lyric, FILE *const restrict file) {
     if (unlikely(lyric == NULL || file == NULL))
         return;
-    fprintf(file, "{\n");
-    fprintf(file, "    \"tags\": {\n");
+    fprintf(file,
+        "{\n"
+        "    \"tags\": {\n"
+    );
     for (size_t i = 0; i < lyric->tags.size; ++i) {
         fprintf(file, "        \"%s\": \"%s\",\n", lyric->tags.name[i], lyric->tags.value[i]);
     }
-    fprintf(file, "    },\n");
-    fprintf(file, "    \"singers\": [\n");
+    fprintf(file,
+        "    },\n"
+        "    \"singers\": [\n"
+    );
     for (size_t i = 0; i < lyric->singer_size; ++i) {
-        fprintf(file, "        {\n");
-        fprintf(file, "            \"tags\": {\n");
+        fprintf(file,
+            "        {\n"
+            "\"tags\": {\n"
+        );
         for (size_t j = 0; j < lyric->singers[i].tags.size; ++j) {
             fprintf(file, "                \"%s\": \"%s\",\n", lyric->singers[i].tags.name[j], lyric->singers[i].tags.value[j]);
         }
-        fprintf(file, "            },\n");
-        fprintf(file, "            \"contents\": [\n");
+        fprintf(file,
+            "            },\n"
+            "            \"contents\": [\n");
         for (size_t j = 0; j < lyric->singers[i].line_size; ++j) {
             char *const time_string = lyric_time_to_new_string(&lyric->singers[i].lines[j].time);
             fprintf(file, "                [\"%s\"", time_string);
