@@ -113,14 +113,17 @@ static size_t _find_name(Tags *const restrict tags, const char *const restrict n
     if (tags->size == 0) {
         return 0;
     } else {
-        size_t begin = 0, end = tags->size - 1;
-        while (begin < end) {
-            size_t mid = (end - begin) / 2 + begin;
+        size_t begin = 0;
+        size_t len = tags->size;
+        while (len > 0) {
+            size_t half = len >> 1;
+            size_t mid = begin + half;
             int cmp = strcmp(tags->name[mid], name);
-            if (cmp > 0) {
-                begin = mid;
-            } else if (cmp < 0) {
-                end = mid;
+            if (cmp < 0) {
+                begin = mid + 1;
+                len = len - half - 1;
+            } else if (cmp > 0) {
+                len = half;
             } else {
                 *exact = true;
                 return mid;
@@ -154,17 +157,13 @@ bool lyric_tags_insert(Tags *const restrict tags, const char *const restrict nam
     }
     if (unlikely(tags->size == tags->_malloc_size)) {
         size_t size = tags->_malloc_size;
-        void *const name_array = lyric_extend_array(tags->name, sizeof(char *), &size);
-        if (unlikely(name_array == NULL)) {
+        if (unlikely(!lyric_extend_array((void**)&tags->name, sizeof(char *), &size))) {
             return false;
         }
-        tags->name = name_array;
         size = tags->_malloc_size;
-        void *const value_array = lyric_extend_array(tags->value, sizeof(char *), &size);
-        if (unlikely(value_array == NULL)) {
+        if (unlikely(!lyric_extend_array((void**)&tags->value, sizeof(char *), &size))) {
             return false;
         }
-        tags->value = value_array;
         tags->_malloc_size = size;
     }
     memmove(tags->name + position + 1, tags->name + position, sizeof(char *) * (tags->size - position));

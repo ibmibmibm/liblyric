@@ -5,6 +5,7 @@
 #include "tags.h"
 #include "singer.h"
 #include "parser.h"
+#include "lrc_parser.h"
 
 struct _Lyric {
     struct _Tags tags;

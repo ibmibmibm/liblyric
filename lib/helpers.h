@@ -43,6 +43,8 @@
     #endif
 #endif
 
+#define LIBLYRIC_DEFAULT_BUFFER_SIZE 4096
+
 LIBLYRIC_MALLOC
 LIBLYRIC_WARN_UNUSED_RESULT
 static inline void *lyric_alloc(size_t size) {
@@ -62,15 +64,17 @@ static inline void lyric_free(void *pointer) {
 }
 
 LIBLYRIC_WARN_UNUSED_RESULT
-static inline void *lyric_resize_array(void *pointer, size_t size, size_t *array_size, size_t new_size) {
-    void *new_pointer = realloc(pointer, size * new_size);
-    if (new_pointer) {
-        *array_size = new_size;
+static inline bool lyric_resize_array(void **pointer, size_t size, size_t *array_size, size_t new_size) {
+    void *new_pointer = realloc(*pointer, size * new_size);
+    if (unlikely(!new_pointer)) {
+        return false;
     }
-    return new_pointer;
+    *array_size = new_size;
+    *pointer = new_pointer;
+    return true;
 }
 
-static inline void *lyric_extend_array(void *pointer, size_t size, size_t *array_size) {
+static inline bool lyric_extend_array(void **pointer, size_t size, size_t *array_size) {
     return lyric_resize_array(pointer, size, array_size, *array_size == 0 ? 1 : *array_size * 2);
 }
 

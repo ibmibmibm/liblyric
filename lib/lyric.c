@@ -104,11 +104,9 @@ bool lyric_lyric_insert(Lyric *const restrict lyric, const size_t position, cons
         return false;
     }
     if (unlikely(lyric->singer_size == lyric->_malloc_singer_size)) {
-        void *const array = lyric_extend_array(lyric->singers, sizeof(Singer), &lyric->_malloc_singer_size);
-        if (unlikely(array == NULL)) {
+        if (unlikely(!lyric_extend_array((void**)&lyric->singers, sizeof(Singer), &lyric->_malloc_singer_size))) {
             return false;
         }
-        lyric->singers = array;
     }
     memmove(lyric->singers + position + 1, lyric->singers + position, sizeof(Singer) * (lyric->singer_size - position));
     if (unlikely(!lyric_singer_copy(&lyric->singers[position], singer))) {

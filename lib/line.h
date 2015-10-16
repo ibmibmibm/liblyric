@@ -21,6 +21,12 @@ bool lyric_line_copy(Line *const restrict line, const Line *const restrict _line
 
 void lyric_line_clean(Line *const restrict line);
 
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
+Line *lyric_line_new(void);
+
+void lyric_line_delete(Line *const restrict line);
+
 LIBLYRIC_WARN_UNUSED_RESULT
 bool lyric_line_insert(Line *const restrict line, const size_t position, const Word *const restrict word);
 

@@ -34,11 +34,9 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                     parser->_d0 = parser->lyrics;
                 } else {
                     if (parser->_malloc_size == parser->size) {
-                        struct _Lyric *array = lyric_extend_array(parser->lyrics, sizeof(struct _Lyric), &parser->_malloc_size);
-                        if (array == NULL) {
+                        if (unlikely(!lyric_extend_array((void**)&parser->lyrics, sizeof(struct _Lyric), &parser->_malloc_size))) {
                             return JSON_ERROR_NO_MEMORY;
                         }
-                        parser->lyrics = array;
                     }
                     if (!lyric_lyric_create(&parser->lyrics[parser->size])) {
                         return JSON_ERROR_NO_MEMORY;
@@ -244,11 +242,9 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                     parser->_d0 = parser->lyrics;
                 } else {
                     if (parser->_malloc_size == parser->size) {
-                        struct _Lyric *array = lyric_extend_array(parser->lyrics, sizeof(struct _Lyric), &parser->_malloc_size);
-                        if (array == NULL) {
+                        if (unlikely(!lyric_extend_array((void**)&parser->lyrics, sizeof(struct _Lyric), &parser->_malloc_size))) {
                             return JSON_ERROR_NO_MEMORY;
                         }
-                        parser->lyrics = array;
                     }
                     if (!lyric_lyric_create(&parser->lyrics[parser->size])) {
                         return JSON_ERROR_NO_MEMORY;

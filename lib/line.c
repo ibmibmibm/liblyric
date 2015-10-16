@@ -60,16 +60,37 @@ void lyric_line_clean(Line *const restrict line) {
     lyric_free(line->words);
 }
 
+Line *lyric_line_new(void) {
+    Line *line = (Line *)lyric_alloc(sizeof(Line));
+    if (unlikely(line == NULL)) {
+        goto err0;
+    }
+    if (unlikely(!lyric_line_create(line))) {
+        goto err1;
+    }
+    return line;
+err1:
+    lyric_free(line);
+err0:
+    return NULL;
+}
+
+void lyric_line_delete(Line *const restrict line) {
+    if (unlikely(line == NULL)) {
+        return;
+    }
+    lyric_line_clean(line);
+    lyric_free(line);
+}
+
 bool lyric_line_insert(Line *const restrict line, const size_t position, const Word *const restrict word) {
     if (unlikely(line->word_size < position || word == NULL)) {
         return false;
     }
     if (unlikely(line->word_size == line->_malloc_word_size)) {
-        void *const array = lyric_extend_array(line->words, sizeof(Word), &line->_malloc_word_size);
-        if (unlikely(array == NULL)) {
+        if (unlikely(!lyric_extend_array((void**)&line->words, sizeof(Word), &line->_malloc_word_size))) {
             return false;
         }
-        line->words = array;
     }
     memmove(line->words + position + 1, line->words + position, sizeof(Word) * (line->word_size - position));
     if (unlikely(!lyric_word_copy(&line->words[position], word))) {
