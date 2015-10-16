@@ -32,62 +32,23 @@
 
 #define lyric_min(a, b) ((a) < (b) ? (a) : (b))
 
-#ifdef LEAK_LOG
-static inline void lyric_trace(void) {
-    void *array[10];
-    size_t size;
-    char **strings;
-    size_t i;
-
-    size = backtrace(array, 10);
-    strings = backtrace_symbols(array, size);
-
-    fprintf(stderr, "Obtained %zd stack frames.\n", size);
-
-    for (i = 0; i < size; i++)
-        fprintf(stderr, "%s\n", strings[i]);
-
-    free(strings);
-}
-#endif // LEAK_LOG
-
 static inline void *lyric_alloc(size_t size) {
     void *const pointer = malloc(size);
-#ifdef LEAK_LOG
-    fprintf(stderr, "+%p %zd\n", pointer, size);
-#ifdef BACKTRACE
-    lyric_trace();
-#endif // BACKTRACE
-#endif // LEAK_LOG
     return pointer;
 }
 
 static inline void *lyric_alloc_init(size_t size) {
     void *const pointer = calloc(1, size);
-#ifdef LEAK_LOG
-    fprintf(stderr, "+%p %zd\n", pointer, size);
-#endif // LEAK_LOG
     return pointer;
 }
 
 static inline void lyric_free(void *pointer) {
-#ifdef LEAK_LOG
-    fprintf(stderr, "-%p\n", pointer);
-#endif // LEAK_LOG
     free(pointer);
 }
 
 static inline void *lyric_resize_array(void *pointer, size_t size, size_t *array_size, size_t new_size) {
     void *new_pointer = realloc(pointer, size * new_size);
     if (new_pointer) {
-#ifdef LEAK_LOG
-        if (pointer != new_pointer) {
-            fprintf(stderr, "-%p\n", pointer);
-            fprintf(stderr, "+%p %zd\n", new_pointer, size);
-        } else {
-            fprintf(stderr, "=%p %zd\n", new_pointer, size);
-        }
-#endif // LEAK_LOG
         *array_size = new_size;
     }
     return new_pointer;
