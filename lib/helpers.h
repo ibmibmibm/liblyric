@@ -43,8 +43,6 @@
     #endif
 #endif
 
-#define lyric_min(a, b) ((a) < (b) ? (a) : (b))
-
 LIBLYRIC_MALLOC
 LIBLYRIC_WARN_UNUSED_RESULT
 static inline void *lyric_alloc(size_t size) {
