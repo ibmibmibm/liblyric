@@ -8,9 +8,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
-#ifdef BACKTRACE
-#include <execinfo.h>
-#endif // BACKTRACE
 
 #ifndef likely
     #if defined(__GNUC__) && __GNUC__ >= 3
@@ -77,7 +74,7 @@ static inline char *lyric_strndup(const char *const restrict pointer, const size
 }
 
 static inline char *lyric_strdup(const char *const restrict pointer) {
-    return lyric_strndup(pointer, strlen(pointer))
+    return lyric_strndup(pointer, strlen(pointer));
 }
 
 #ifdef HAVE_STRCASECMP
@@ -99,6 +96,7 @@ static inline int lyric_strncasecmp(const char *const restrict a, const char *co
     }
     return 0;
 }
+#endif // HAVE_STRCASECMP
 
 static inline void lyric_strreverse(char *restrict begin, char *restrict end) {
     char aux;
