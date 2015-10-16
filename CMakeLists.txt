@@ -49,11 +49,15 @@ else(MSVC)
 #        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
 #    endif(HAVE_WERROR)
 
-    add_definitions()
     check_c_compiler_flag("-Wp,-D_FORTIFY_SOURCE=2" HAVE_FORTIFY_SOURCE)
     if(HAVE_FORTIFY_SOURCE)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wp,-D_FORTIFY_SOURCE=2")
     endif(HAVE_FORTIFY_SOURCE)
+
+    check_c_compiler_flag("-fsanitize=address" HAVE_ADDRESS_SANITIZER)
+    if(HAVE_ADDRESS_SANITIZER)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-common")
+    endif(HAVE_ADDRESS_SANITIZER)
 endif(MSVC)
 
 check_function_exists(strcasecmp STRCASECMP)
