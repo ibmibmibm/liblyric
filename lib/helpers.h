@@ -58,14 +58,6 @@ static inline void *lyric_extend_array(void *pointer, size_t size, size_t *array
     return lyric_resize_array(pointer, size, array_size, *array_size == 0 ? 1 : *array_size * 2);
 }
 
-static inline char *lyric_strdup(const char *const restrict pointer) {
-    char *result = lyric_alloc(strlen(pointer) + 1);
-    if (unlikely(result == NULL))
-        return NULL;
-    strcpy(result, pointer);
-    return result;
-}
-
 static inline char *lyric_strndup(const char *const restrict pointer, const size_t size) {
     char *result = lyric_alloc(size + 1);
     if (unlikely(result == NULL))
@@ -75,6 +67,16 @@ static inline char *lyric_strndup(const char *const restrict pointer, const size
     return result;
 }
 
+static inline char *lyric_strdup(const char *const restrict pointer) {
+    return lyric_strndup(pointer, strlen(pointer))
+}
+
+#ifdef HAVE_STRCASECMP
+#include <strings.h>
+static inline int lyric_strncasecmp(const char *const restrict a, const char *const restrict b, const size_t n) {
+    return strncasecmp(a, b, n);
+}
+#else
 static inline int lyric_strncasecmp(const char *const restrict a, const char *const restrict b, const size_t n) {
     for (size_t i = 0; i < n; ++i) {
         const int ac = tolower(a[i]);

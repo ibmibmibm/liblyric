@@ -55,5 +55,10 @@ else(MSVC)
     endif(HAVE_FORTIFY_SOURCE)
 endif(MSVC)
 
+check_function_exists(strcasecmp STRCASECMP)
+if(STRCASECMP
+        add_definitions(-DHAVE_STRCASECMP)
+endif()
+
 add_subdirectory(lib)
 add_subdirectory(src)
