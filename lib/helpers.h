@@ -30,14 +30,22 @@
     #endif
 #endif
 
+#ifndef __malloc
+    #if defined(__GNUC__) && __GNUC__ >= 3
+        #define __malloc __attribute__((malloc))
+    #else
+        #define __malloc
+    #endif
+#endif
+
 #define lyric_min(a, b) ((a) < (b) ? (a) : (b))
 
-static inline void *lyric_alloc(size_t size) {
+static inline void *lyric_alloc(size_t size) __malloc {
     void *const pointer = malloc(size);
     return pointer;
 }
 
-static inline void *lyric_alloc_init(size_t size) {
+static inline void *lyric_alloc_init(size_t size) __malloc {
     void *const pointer = calloc(1, size);
     return pointer;
 }
