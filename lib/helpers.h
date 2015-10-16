@@ -68,8 +68,9 @@ static inline void *lyric_extend_array(void *pointer, size_t size, size_t *array
 
 static inline char *lyric_strndup(const char *const restrict pointer, const size_t size) {
     char *result = lyric_alloc(size + 1);
-    if (unlikely(result == NULL))
+    if (unlikely(result == NULL)) {
         return NULL;
+    }
     strncpy(result, pointer, size);
     result[size] = '\0';
     return result;
@@ -89,15 +90,17 @@ static inline int lyric_strncasecmp(const char *const restrict a, const char *co
     for (size_t i = 0; i < n; ++i) {
         const int ac = tolower(a[i]);
         const int bc = tolower(b[i]);
-        if (ac < bc)
+        if (ac < bc) {
             return -1;
-        if (ac > bc)
+        }
+        if (ac > bc) {
             return 1;
+        }
     }
     return 0;
 }
 
-static inline void lyric_strreverse(char*restrict begin, char*restrict end) {
+static inline void lyric_strreverse(char *restrict begin, char *restrict end) {
     char aux;
     while (begin < end) {
         aux = *begin;
@@ -110,15 +113,16 @@ static inline void lyric_ultostr(unsigned long int value, size_t padding, char *
     char *cursor = string;
     char *min_endpos = string + padding;
     do {
-        *cursor++ = (char) ((value % 10) + '0');
+        *cursor++ = (char)((value % 10) + '0');
         value /= 10;
     } while (value != 0);
     while (cursor < min_endpos) {
         *cursor++ = '0';
     }
     *cursor = '\0';
-    if (endpos != NULL)
+    if (endpos != NULL) {
         *endpos = cursor;
+    }
     lyric_strreverse(string, cursor - 1);
 }
 

@@ -7,7 +7,7 @@ bool lyric_lyric_create(Lyric *const restrict lyric) {
     }
     lyric->singer_size = 0;
     lyric->_malloc_singer_size = 1;
-    lyric->singers = (Singer*)lyric_alloc(sizeof(Singer));
+    lyric->singers = (Singer *)lyric_alloc(sizeof(Singer));
     if (unlikely(lyric->singers == NULL)) {
         goto err1;
     }
@@ -18,7 +18,7 @@ err0:
     return false;
 }
 
-bool lyric_lyric_copy(Lyric* const restrict lyric, const Lyric *const restrict _lyric) {
+bool lyric_lyric_copy(Lyric *const restrict lyric, const Lyric *const restrict _lyric) {
     if (unlikely(_lyric == NULL || lyric == NULL)) {
         goto err0;
     }
@@ -30,7 +30,7 @@ bool lyric_lyric_copy(Lyric* const restrict lyric, const Lyric *const restrict _
     }
     const size_t size = _lyric->singer_size;
     lyric->_malloc_singer_size = size;
-    lyric->singers = (Singer*)lyric_alloc(sizeof(Singer) * size);
+    lyric->singers = (Singer *)lyric_alloc(sizeof(Singer) * size);
     if (unlikely(lyric->singers == NULL)) {
         goto err1;
     }
@@ -51,8 +51,8 @@ err0:
     return false;
 }
 
-Lyric* lyric_lyric_new(void) {
-    Lyric *lyric = (Lyric*)lyric_alloc(sizeof(Lyric));
+Lyric *lyric_lyric_new(void) {
+    Lyric *lyric = (Lyric *)lyric_alloc(sizeof(Lyric));
     if (unlikely(lyric == NULL)) {
         goto err0;
     }
@@ -66,8 +66,8 @@ err0:
     return NULL;
 }
 
-Lyric* lyric_lyric_new_copy(const Lyric *const restrict _lyric) {
-    Lyric *lyric = (Lyric*)lyric_alloc(sizeof(Lyric));
+Lyric *lyric_lyric_new_copy(const Lyric *const restrict _lyric) {
+    Lyric *lyric = (Lyric *)lyric_alloc(sizeof(Lyric));
     if (unlikely(lyric == NULL)) {
         goto err0;
     }
@@ -92,15 +92,17 @@ void lyric_lyric_clean(Lyric *const restrict lyric) {
 }
 
 void lyric_lyric_delete(Lyric *const restrict lyric) {
-    if (unlikely(lyric == NULL))
+    if (unlikely(lyric == NULL)) {
         return;
+    }
     lyric_lyric_clean(lyric);
     lyric_free(lyric);
 }
 
 bool lyric_lyric_insert(Lyric *const restrict lyric, const size_t position, const Singer *const restrict singer) {
-    if (unlikely(lyric->singer_size < position || singer == NULL))
+    if (unlikely(lyric->singer_size < position || singer == NULL)) {
         return false;
+    }
     if (unlikely(lyric->singer_size == lyric->_malloc_singer_size)) {
         void *const array = lyric_extend_array(lyric->singers, sizeof(Singer), &lyric->_malloc_singer_size);
         if (unlikely(array == NULL)) {
@@ -118,8 +120,9 @@ bool lyric_lyric_insert(Lyric *const restrict lyric, const size_t position, cons
 }
 
 void lyric_lyric_remove(Lyric *const restrict lyric, const size_t position, Singer *const restrict singer) {
-    if (unlikely(lyric->singer_size <= position))
+    if (unlikely(lyric->singer_size <= position)) {
         return;
+    }
 
     if (unlikely(singer != NULL)) {
         memcpy(singer, &lyric->singers[position], sizeof(Singer));

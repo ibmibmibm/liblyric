@@ -12,11 +12,11 @@ struct _Tags {
 typedef struct _Tags Tags;
 
 bool lyric_tags_create(Tags *const restrict tags);
-bool lyric_tags_copy(Tags* const restrict tags, const Tags *const restrict _tags);
+bool lyric_tags_copy(Tags *const restrict tags, const Tags *const restrict _tags);
 void lyric_tags_clean(Tags *const restrict tags);
 
-Tags* lyric_tags_new(void);
-Tags* lyric_tags_new_copy(const Tags *const restrict _tags);
+Tags *lyric_tags_new(void);
+Tags *lyric_tags_new_copy(const Tags *const restrict _tags);
 void lyric_tags_delete(Tags *const restrict tags);
 
 bool lyric_tags_insert(Tags *const restrict tags, const char *const restrict name, const char *const restrict value);

@@ -14,8 +14,8 @@ struct _Line {
 typedef struct _Line Line;
 
 bool lyric_line_create(Line *const restrict line);
-bool lyric_line_copy(Line* const restrict line, const Line *const restrict _line);
-void lyric_line_clean(Line* const restrict line);
+bool lyric_line_copy(Line *const restrict line, const Line *const restrict _line);
+void lyric_line_clean(Line *const restrict line);
 
 bool lyric_line_insert(Line *const restrict line, const size_t position, const Word *const restrict word);
 void lyric_line_remove(Line *const restrict line, const size_t position, Word *const restrict word);

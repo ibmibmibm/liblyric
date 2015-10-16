@@ -35,13 +35,16 @@ bool lyric_word_copy(Word *const restrict word, const Word *const restrict _word
     if (unlikely(word == NULL || _word == NULL)) {
         goto err0;
     }
-    if (unlikely(word == _word))
+    if (unlikely(word == _word)) {
         return true;
-    if (unlikely(!lyric_time_copy(&word->time, &_word->time)))
+    }
+    if (unlikely(!lyric_time_copy(&word->time, &_word->time))) {
         goto err0;
+    }
     word->string = lyric_strdup(_word->string);
-    if (unlikely(word->string == NULL))
+    if (unlikely(word->string == NULL)) {
         goto err1;
+    }
     return true;
 err1:
     lyric_time_clean(&word->time);

@@ -3,11 +3,11 @@
 bool lyric_tags_create(Tags *const restrict tags) {
     tags->size = 0;
     tags->_malloc_size = 1;
-    tags->name = (char**)lyric_alloc(sizeof(char*));
+    tags->name = (char **)lyric_alloc(sizeof(char *));
     if (unlikely(tags->name == NULL)) {
         goto err0;
     }
-    tags->value = (char**)lyric_alloc(sizeof(char*));
+    tags->value = (char **)lyric_alloc(sizeof(char *));
     if (unlikely(tags->value == NULL)) {
         goto err1;
     }
@@ -18,7 +18,7 @@ err0:
     return false;
 }
 
-bool lyric_tags_copy(Tags* const restrict tags, const Tags *const restrict _tags) {
+bool lyric_tags_copy(Tags *const restrict tags, const Tags *const restrict _tags) {
     if (unlikely(_tags == NULL || tags == NULL)) {
         goto err0;
     }
@@ -27,11 +27,11 @@ bool lyric_tags_copy(Tags* const restrict tags, const Tags *const restrict _tags
     }
     const size_t size = _tags->size;
     tags->_malloc_size = size;
-    tags->name = (char**)lyric_alloc(sizeof(char*) * size);
+    tags->name = (char **)lyric_alloc(sizeof(char *) * size);
     if (unlikely(tags->name == NULL)) {
         goto err0;
     }
-    tags->value = (char**)lyric_alloc(sizeof(char*) * size);
+    tags->value = (char **)lyric_alloc(sizeof(char *) * size);
     if (unlikely(tags->value == NULL)) {
         goto err1;
     }
@@ -59,8 +59,8 @@ err0:
     return false;
 }
 
-Tags* lyric_tags_new(void) {
-    Tags *tags = (Tags*)lyric_alloc(sizeof(Tags));
+Tags *lyric_tags_new(void) {
+    Tags *tags = (Tags *)lyric_alloc(sizeof(Tags));
     if (unlikely(tags == NULL)) {
         goto err0;
     }
@@ -74,8 +74,8 @@ err0:
     return NULL;
 }
 
-Tags* lyric_tags_new_copy(const Tags *const restrict _tags) {
-    Tags *tags = (Tags*)lyric_alloc(sizeof(Tags));
+Tags *lyric_tags_new_copy(const Tags *const restrict _tags) {
+    Tags *tags = (Tags *)lyric_alloc(sizeof(Tags));
     if (unlikely(tags == NULL)) {
         goto err0;
     }
@@ -101,17 +101,18 @@ void lyric_tags_clean(Tags *const restrict tags) {
 }
 
 void lyric_tags_delete(Tags *const restrict tags) {
-    if (unlikely(tags == NULL))
+    if (unlikely(tags == NULL)) {
         return;
+    }
     lyric_tags_clean(tags);
     lyric_free(tags);
 }
 
 static size_t _find_name(Tags *const restrict tags, const char *const restrict name, bool *const restrict exact) {
     *exact = false;
-    if (tags->size == 0)
+    if (tags->size == 0) {
         return 0;
-    else {
+    } else {
         size_t begin = 0, end = tags->size - 1;
         while (begin < end) {
             size_t mid = (end - begin) / 2 + begin;
@@ -130,8 +131,9 @@ static size_t _find_name(Tags *const restrict tags, const char *const restrict n
 }
 
 bool lyric_tags_insert(Tags *const restrict tags, const char *const restrict name, const char *const restrict value) {
-    if (unlikely(tags == NULL || name == NULL || value == NULL))
+    if (unlikely(tags == NULL || name == NULL || value == NULL)) {
         return false;
+    }
     bool exact;
     const size_t position = _find_name(tags, name, &exact);
     if (exact) {
@@ -152,25 +154,25 @@ bool lyric_tags_insert(Tags *const restrict tags, const char *const restrict nam
     }
     if (unlikely(tags->size == tags->_malloc_size)) {
         size_t size = tags->_malloc_size;
-        void *const name_array = lyric_extend_array(tags->name, sizeof(char*), &size);
+        void *const name_array = lyric_extend_array(tags->name, sizeof(char *), &size);
         if (unlikely(name_array == NULL)) {
             return false;
         }
         tags->name = name_array;
         size = tags->_malloc_size;
-        void *const value_array = lyric_extend_array(tags->value, sizeof(char*), &size);
+        void *const value_array = lyric_extend_array(tags->value, sizeof(char *), &size);
         if (unlikely(value_array == NULL)) {
             return false;
         }
         tags->value = value_array;
         tags->_malloc_size = size;
     }
-    memmove(tags->name + position + 1, tags->name + position, sizeof(char*) * (tags->size - position));
+    memmove(tags->name + position + 1, tags->name + position, sizeof(char *) * (tags->size - position));
     tags->name[position] = lyric_strdup(name);
     if (unlikely(tags->name[position] == NULL)) {
         goto err1;
     }
-    memmove(tags->value + position + 1, tags->value + position, sizeof(char*) * (tags->size - position));
+    memmove(tags->value + position + 1, tags->value + position, sizeof(char *) * (tags->size - position));
     tags->value[position] = lyric_strdup(value);
     if (unlikely(tags->value[position] == NULL)) {
         goto err0;
@@ -178,16 +180,17 @@ bool lyric_tags_insert(Tags *const restrict tags, const char *const restrict nam
     ++tags->size;
     return true;
 err1:
-    memmove(tags->value + position, tags->value + position + 1, sizeof(char*) * (tags->size - position));
+    memmove(tags->value + position, tags->value + position + 1, sizeof(char *) * (tags->size - position));
     lyric_free(tags->name[position]);
 err0:
-    memmove(tags->name + position, tags->name + position + 1, sizeof(char*) * (tags->size - position));
+    memmove(tags->name + position, tags->name + position + 1, sizeof(char *) * (tags->size - position));
     return false;
 }
 
 void lyric_tags_remove(Tags *const restrict tags, char *const restrict name) {
-    if (unlikely(name == NULL))
+    if (unlikely(name == NULL)) {
         return;
+    }
     size_t begin = 0, end = tags->size - 1;
     while (begin < end) {
         size_t mid = (end - begin) / 2 + begin;
@@ -199,8 +202,8 @@ void lyric_tags_remove(Tags *const restrict tags, char *const restrict name) {
         } else {
             lyric_free(tags->name[mid]);
             lyric_free(tags->value[mid]);
-            memmove(tags->name + mid, tags->name + mid + 1, sizeof(char*) * (tags->size - mid));
-            memmove(tags->value + mid, tags->value + mid + 1, sizeof(char*) * (tags->size - mid));
+            memmove(tags->name + mid, tags->name + mid + 1, sizeof(char *) * (tags->size - mid));
+            memmove(tags->value + mid, tags->value + mid + 1, sizeof(char *) * (tags->size - mid));
             --tags->size;
             return;
         }

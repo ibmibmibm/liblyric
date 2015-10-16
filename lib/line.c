@@ -6,7 +6,7 @@ bool lyric_line_create(Line *const restrict line) {
     }
     line->word_size = 0;
     line->_malloc_word_size = 1;
-    line->words = (Word*)lyric_alloc(sizeof(Word));
+    line->words = (Word *)lyric_alloc(sizeof(Word));
     if (unlikely(line->words == NULL)) {
         goto err1;
     }
@@ -17,7 +17,7 @@ err0:
     return false;
 }
 
-bool lyric_line_copy(Line* const restrict line, const Line *const restrict _line) {
+bool lyric_line_copy(Line *const restrict line, const Line *const restrict _line) {
     if (unlikely(line == NULL || _line == NULL)) {
         goto err0;
     }
@@ -29,7 +29,7 @@ bool lyric_line_copy(Line* const restrict line, const Line *const restrict _line
     }
     const size_t size = _line->word_size;
     line->_malloc_word_size = size;
-    line->words = (Word*)lyric_alloc(sizeof(Word) * size);
+    line->words = (Word *)lyric_alloc(sizeof(Word) * size);
     if (unlikely(line->words == NULL)) {
         goto err1;
     }
@@ -49,7 +49,7 @@ err0:
     return false;
 }
 
-void lyric_line_clean(Line* const restrict line) {
+void lyric_line_clean(Line *const restrict line) {
     if (unlikely(line == NULL)) {
         return;
     }
@@ -61,8 +61,9 @@ void lyric_line_clean(Line* const restrict line) {
 }
 
 bool lyric_line_insert(Line *const restrict line, const size_t position, const Word *const restrict word) {
-    if (unlikely(line->word_size < position || word == NULL))
+    if (unlikely(line->word_size < position || word == NULL)) {
         return false;
+    }
     if (unlikely(line->word_size == line->_malloc_word_size)) {
         void *const array = lyric_extend_array(line->words, sizeof(Word), &line->_malloc_word_size);
         if (unlikely(array == NULL)) {
@@ -80,8 +81,9 @@ bool lyric_line_insert(Line *const restrict line, const size_t position, const W
 }
 
 void lyric_line_remove(Line *const restrict line, const size_t position, Word *const restrict word) {
-    if (unlikely(line->word_size <= position))
+    if (unlikely(line->word_size <= position)) {
         return;
+    }
 
     if (unlikely(word != NULL)) {
         memcpy(word, &line->words[position], sizeof(Word));
