@@ -3,6 +3,7 @@ project(LYRIC)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+include(CheckFunctionExists)
 include(CheckCCompilerFlag)
 
 if(MSVC)
@@ -56,7 +57,7 @@ else(MSVC)
 endif(MSVC)
 
 check_function_exists(strcasecmp STRCASECMP)
-if(STRCASECMP
+if(STRCASECMP)
         add_definitions(-DHAVE_STRCASECMP)
 endif()
 
