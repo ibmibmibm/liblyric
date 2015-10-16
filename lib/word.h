@@ -10,9 +10,15 @@ struct _Word {
 };
 typedef struct _Word Word;
 
+LIBLYRIC_WARN_UNUSED_RESULT
 bool lyric_word_create(Word *const restrict word);
+
+LIBLYRIC_WARN_UNUSED_RESULT
 bool lyric_word_create_from_data(Word *const restrict word, Time *const restrict time, char *const restrict string);
+
+LIBLYRIC_WARN_UNUSED_RESULT
 bool lyric_word_copy(Word *const restrict word, const Word *const restrict _word);
+
 void lyric_word_clean(Word *const restrict word);
 
 #endif // __WORD_H__

@@ -19,30 +19,42 @@
     #endif
 #endif
 
-#ifndef __unused
+#ifndef LIBLYRIC_UNUSED
     #if defined(__GNUC__) && __GNUC__ >= 3
-        #define __unused __attribute__((unused))
+        #define LIBLYRIC_UNUSED __attribute__((unused))
     #else
-        #define __unused
+        #define LIBLYRIC_UNUSED
     #endif
 #endif
 
-#ifndef __malloc
+#ifndef LIBLYRIC_MALLOC
     #if defined(__GNUC__) && __GNUC__ >= 3
-        #define __malloc __attribute__((malloc))
+        #define LIBLYRIC_MALLOC __attribute__((malloc))
     #else
-        #define __malloc
+        #define LIBLYRIC_MALLOC
+    #endif
+#endif
+
+#ifndef LIBLYRIC_WARN_UNUSED_RESULT
+    #if defined(__GNUC__) && __GNUC__ >= 3
+        #define LIBLYRIC_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
+    #else
+        #define LIBLYRIC_WARN_UNUSED_RESULT
     #endif
 #endif
 
 #define lyric_min(a, b) ((a) < (b) ? (a) : (b))
 
-static inline void *lyric_alloc(size_t size) __malloc {
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
+static inline void *lyric_alloc(size_t size) {
     void *const pointer = malloc(size);
     return pointer;
 }
 
-static inline void *lyric_alloc_init(size_t size) __malloc {
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
+static inline void *lyric_alloc_init(size_t size) {
     void *const pointer = calloc(1, size);
     return pointer;
 }
@@ -51,6 +63,7 @@ static inline void lyric_free(void *pointer) {
     free(pointer);
 }
 
+LIBLYRIC_WARN_UNUSED_RESULT
 static inline void *lyric_resize_array(void *pointer, size_t size, size_t *array_size, size_t new_size) {
     void *new_pointer = realloc(pointer, size * new_size);
     if (new_pointer) {
@@ -63,6 +76,8 @@ static inline void *lyric_extend_array(void *pointer, size_t size, size_t *array
     return lyric_resize_array(pointer, size, array_size, *array_size == 0 ? 1 : *array_size * 2);
 }
 
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
 static inline char *lyric_strndup(const char *const restrict pointer, const size_t size) {
     char *result = lyric_alloc(size + 1);
     if (unlikely(result == NULL)) {
@@ -73,6 +88,8 @@ static inline char *lyric_strndup(const char *const restrict pointer, const size
     return result;
 }
 
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
 static inline char *lyric_strdup(const char *const restrict pointer) {
     return lyric_strndup(pointer, strlen(pointer));
 }

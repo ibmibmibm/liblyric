@@ -51,13 +51,26 @@ struct _Parser {
 };
 typedef struct _Parser Parser;
 
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
 Parser *lyric_parser_new(void);
-bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict filename);
+
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
 Parser *lyric_parser_new_from_file(FILE *const restrict filename);
-struct _Lyric *lyric_read_file(FILE *const restrict file);
-void lyric_write_file(const struct _Lyric *const restrict lyric, FILE *const restrict file);
-void lyric_parser_clean(Parser *const restrict parser);
+
 void lyric_parser_delete(Parser *const restrict parser);
+
+LIBLYRIC_WARN_UNUSED_RESULT
+bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict filename);
+
+LIBLYRIC_MALLOC
+LIBLYRIC_WARN_UNUSED_RESULT
+struct _Lyric *lyric_read_file(FILE *const restrict file);
+
+void lyric_write_file(const struct _Lyric *const restrict lyric, FILE *const restrict file);
+
+void lyric_parser_clean(Parser *const restrict parser);
 
 #endif // __PARSER_H__
 // vim:ts=4 sts=4 sw=4 et
