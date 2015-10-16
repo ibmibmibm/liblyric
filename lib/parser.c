@@ -22,7 +22,6 @@ static const char *const string_of_errors[] = {
 
 static int _json_parser_callback(void *const restrict userdata, const int type, const char *const restrict data, const uint32_t length) {
     struct _Parser *parser = userdata;
-    // TODO: detect oom
     switch (parser->status) {
         case lyric_parser_status_start: {
             if (type == JSON_ARRAY_BEGIN) {
@@ -105,7 +104,9 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
                 parser->status = lyric_parser_status_lyric;
             } else if (type == JSON_OBJECT_BEGIN) {
                 Singer singer;
-                lyric_singer_create(&singer);
+                if (unlikely(!lyric_singer_create(&singer))) {
+                    return JSON_ERROR_NO_MEMORY;
+                }
                 bool result = lyric_lyric_push_back(parser->_d0, &singer);
                 lyric_singer_clean(&singer);
                 if (!result) {
@@ -184,15 +185,18 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         } return 0;
         case lyric_parser_status_lyric_singer_contents_line_offset: {
             if (type == JSON_STRING) {
-                // TODO: no mem detect
                 Line line;
-                lyric_line_create(&line);
+                if (unlikely(!lyric_line_create(&line))) {
+                    return JSON_ERROR_NO_MEMORY;
+                }
                 bool result = lyric_time_create_from_string(&line.time, data, length);
                 if (unlikely(!result)) {
                     lyric_line_clean(&line);
                     return JSON_ERROR_CALLBACK;
                 }
-                lyric_singer_push_back(parser->_d1.s, &line);
+                if (unlikely(!lyric_singer_push_back(parser->_d1.s, &line))) {
+                    return JSON_ERROR_NO_MEMORY;
+                }
                 lyric_line_clean(&line);
                 parser->_d2.l = &parser->_d1.s->lines[parser->_d1.s->line_size - 1];
                 parser->status = lyric_parser_status_lyric_singer_contents_line_word;
@@ -213,12 +217,18 @@ static int _json_parser_callback(void *const restrict userdata, const int type, 
         case lyric_parser_status_lyric_singer_contents_line_time: {
             if (type == JSON_INT) {
                 Time time;
-                lyric_time_create_from_literal(&time, data, length);
+                if (unlikely(!lyric_time_create_from_literal(&time, data, length))) {
+                    return JSON_ERROR_CALLBACK;
+                }
                 Word word;
-                lyric_word_create_from_data(&word, &time, parser->_d3.k);
+                if (unlikely(!lyric_word_create_from_data(&word, &time, parser->_d3.k))) {
+                    return JSON_ERROR_NO_MEMORY;
+                }
                 lyric_free(parser->_d3.k);
                 lyric_time_clean(&time);
-                lyric_line_push_back(parser->_d2.l, &word);
+                if (unlikely(!lyric_line_push_back(parser->_d2.l, &word))) {
+                    return JSON_ERROR_NO_MEMORY;
+                }
                 lyric_word_clean(&word);
                 parser->status = lyric_parser_status_lyric_singer_contents_line_word;
             } else {
@@ -266,20 +276,20 @@ static int _do_process_file(json_parser *const restrict parser, size_t *restrict
     while (true) {
         char buffer[LIBJSON_DEFAULT_BUFFER_SIZE];
         int32_t read = fread(buffer, 1, LIBJSON_DEFAULT_BUFFER_SIZE, file);
-        if (read <= 0) {
+        if (unlikely(read <= 0)) {
             break;
         }
         uint32_t processed;
         ret = json_parser_string(parser, buffer, read, &processed);
         for (uint32_t i = 0; i < processed; i++) {
-            if (buffer[i] == '\n') {
+            if (unlikely(buffer[i] == '\n')) {
                 *col = 0;
                 ++*lines;
             } else {
                 ++*col;
             }
         }
-        if (ret) {
+        if (unlikely(ret)) {
             break;
         }
     }
@@ -299,16 +309,16 @@ bool lyric_parser_from_file(Parser *const restrict parser, FILE *const restrict 
     };
     json_parser _parser;
     int ret = json_parser_init(&_parser, &config, _json_parser_callback, parser);
-    if (ret != 0) {
+    if (unlikely(ret != 0)) {
         fprintf(stderr, "error: initializing parser failed (code=%d): %s\n", ret, string_of_errors[ret]);
         return false;
     }
     ret = _do_process_file(&_parser, &parser->lines, &parser->col, file);
-    if (ret != 0) {
+    if (unlikely(ret != 0)) {
         fprintf(stderr, "line %zd, col %zd: [code=%d] %s\n", parser->lines, parser->col, ret, string_of_errors[ret]);
         return false;
     }
-    if (json_parser_is_done(&_parser) == 0 || parser->status != lyric_parser_status_finish) {
+    if (unlikely(json_parser_is_done(&_parser) == 0 || parser->status != lyric_parser_status_finish)) {
         return false;
     }
     return true;
